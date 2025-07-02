@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 @Data
@@ -30,7 +31,4 @@ public class Item {
     @ManyToOne
     @NotNull
     private User owner;
-
-//    @ManyToOne
-//    private ItemRequest request;
 }

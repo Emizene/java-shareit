@@ -8,4 +8,5 @@ public class ItemResponseDto {
     private String name;
     private String description;
     private Boolean available;
+    private int count;
 }

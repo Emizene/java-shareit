@@ -11,8 +11,7 @@ import java.util.Optional;
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
     List<Item> findByNameContainingIgnoreCaseAndAvailableIsTrueOrDescriptionContainingIgnoreCaseAndAvailableIsTrue
-            (String name,
-             String description);
+            (String name, String description);
 
     Optional<Item> findByIdAndOwnerId(Long itemId, Long userId);
 }

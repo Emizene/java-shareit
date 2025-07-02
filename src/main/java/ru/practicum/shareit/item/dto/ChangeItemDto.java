@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.dto;
 
 import lombok.Data;
+import ru.practicum.shareit.user.dto.UserResponseDto;
 
 @Data
 public class ChangeItemDto {
@@ -8,10 +9,4 @@ public class ChangeItemDto {
     private String name;
     private String description;
     private Boolean available;
-
-    public ChangeItemDto(String name, String description, Boolean available) {
-        this.name = name;
-        this.description = description;
-        this.available = available;
-    }
 }

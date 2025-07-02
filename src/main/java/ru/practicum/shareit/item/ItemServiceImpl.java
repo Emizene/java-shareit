@@ -100,8 +100,7 @@ public class ItemServiceImpl implements ItemService {
             return ResponseEntity.ok(Collections.emptyList());
         }
 
-        List<Item> items = itemRepository.findByNameContainingIgnoreCaseAndAvailableIsTrueOrDescriptionContainingIgnoreCaseAndAvailableIsTrue
-                (searchText, searchText);
+        List<Item> items = itemRepository.findByNameContainingIgnoreCaseAndAvailableIsTrueOrDescriptionContainingIgnoreCaseAndAvailableIsTrue(searchText, searchText);
 
         if (items.isEmpty()) {
             log.debug("Вещей по запросу searchText={} не найдено", searchText);

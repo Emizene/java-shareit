@@ -17,6 +17,5 @@ public interface ItemMapper {
     @Mapping(target = "ownerName", source = "owner.name")
     ItemResponseDto toItemDto(Item item);
 
-
     List<ItemResponseDto> toItemDtoList(List<Item> item);
 }

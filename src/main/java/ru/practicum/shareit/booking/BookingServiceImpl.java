@@ -1,0 +1,160 @@
+package ru.practicum.shareit.booking;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.dto.BookingResponseDto;
+import ru.practicum.shareit.booking.dto.ChangeBookingDto;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.exception.AccessDeniedException;
+import ru.practicum.shareit.exception.InternalServerErrorException;
+import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.User;
+
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class BookingServiceImpl implements BookingService {
+    private final BookingRepository bookingRepository;
+    private final BookingMapper bookingMapper;
+    private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
+
+    @Override
+    @Transactional
+    public ResponseEntity<BookingResponseDto> createBooking(ChangeBookingDto booking, Long userId) {
+        log.debug("Добавление нового запроса на бронирование с ID {}", booking.getId());
+
+        userRepository.findUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
+
+        Booking entity = bookingMapper.toEntity(booking);
+        entity.setStatus(Status.WAITING);
+        bookingRepository.save(entity);
+        log.info("Успешное добавление запроса: ID={}, пользователь с запросом ID={}", entity.getId(), userId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(bookingMapper.toBookingDto(entity));
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<BookingResponseDto> updateBooking(ChangeBookingDto booking, Long bookingId, Long userId, Boolean approved) {
+        log.debug("Обновление статуса запроса с ID {}", bookingId);
+
+        userRepository.findUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
+
+        itemRepository.findByIdAndOwnerId(bookingId, userId)
+                .orElseThrow(() -> new AccessDeniedException("Пользователь не является владельцем: доступ запрещен"));
+
+        Booking updatedBooking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> {
+                    log.error("Запрос с ID {} не найден для обновления статуса", bookingId);
+                    return new NotFoundException("Запрос с id " + bookingId + " не найден");
+                });
+
+        if (booking.getStatus() != null && !updatedBooking.getStatus().equals(booking.getStatus())) {
+            if (approved) {
+                log.debug("Обновление статуса с {} на {}", booking.getStatus(), updatedBooking.getStatus());
+                updatedBooking.setStatus(Status.APPROVED);
+            }
+            if (!approved) {
+                log.debug("Обновление доступности вещи с {} на {}", booking.getStatus(), updatedBooking.getStatus());
+                updatedBooking.setStatus(Status.REJECTED);
+            }
+        }
+
+        bookingRepository.save(updatedBooking);
+        log.info("Запрос с ID {} успешно обновлён", bookingId);
+
+        return ResponseEntity.ok().body(bookingMapper.toBookingDto(updatedBooking));
+    }
+
+    @Override
+    public ResponseEntity<BookingResponseDto> getBookingById(Long bookingId, Long userId) {
+        log.debug("Запрос бронирования с ID {}", bookingId);
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new NotFoundException("Бронь с ID %s не найдена".formatted(bookingId)));
+
+        if (!userId.equals(booking.getBooker().getId()) &&
+                !userId.equals(booking.getItem().getOwner().getId())) {
+            throw new AccessDeniedException("Пользователь не является владельцем или автором брони: доступ запрещен");
+        }
+
+        log.info("Найдена бронь: ID={}", bookingId);
+
+        return ResponseEntity.ok(bookingMapper.toBookingDto(booking));
+    }
+
+    @Override
+    public ResponseEntity<Void> deleteBookingById(Long bookingId) {
+        bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new NotFoundException("Бронь с ID %s не найдена".formatted(bookingId)));
+
+        bookingRepository.deleteById(bookingId);
+
+        log.info("Бронь с ID={} удалена", bookingId);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<List<BookingResponseDto>> getAllUserBookings(Long userId, String state) {
+        log.debug("Получение списка бронирований пользователя с ID {} со статусом {}", userId, state);
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+
+        List<Booking> bookings = switch (state.toUpperCase()) {
+            case "ALL" -> bookingRepository.findByBookerIdOrderByStartDesc(userId);
+            case "CURRENT" -> bookingRepository.findByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(
+                    userId, LocalDateTime.now(), LocalDateTime.now());
+            case "PAST" -> bookingRepository.findByBookerIdAndEndBeforeOrderByStartDesc(
+                    userId, LocalDateTime.now());
+            case "FUTURE" -> bookingRepository.findByBookerIdAndStartAfterOrderByStartDesc(
+                    userId, LocalDateTime.now());
+            case "WAITING", "REJECTED" -> bookingRepository.findByBookerIdAndStatusOrderByStartDesc(
+                    userId, Status.valueOf(state.toUpperCase()));
+            default -> throw new InternalServerErrorException("Был введен некорректный  статус" + state);
+        };
+
+        return ResponseEntity.ok(bookingMapper.toBookingDtoList(bookings));
+    }
+
+    @Override
+    public ResponseEntity<List<BookingResponseDto>> getAllOwnerBookings(Long userId, String state) {
+        log.debug("Получение списка бронирований владельца ID {} со статусом {}", userId, state);
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+
+        if (!itemRepository.existsByOwnerId(userId)) {
+            throw new AccessDeniedException("Пользователь не является владельцем вещей");
+        }
+
+        List<Booking> bookings = switch (state.toUpperCase()) {
+            case "ALL" -> bookingRepository.findByItemOwnerIdOrderByStartDesc(userId);
+            case "CURRENT" -> bookingRepository.findByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(
+                    userId, LocalDateTime.now(), LocalDateTime.now());
+            case "PAST" -> bookingRepository.findByItemOwnerIdAndEndBeforeOrderByStartDesc(
+                    userId, LocalDateTime.now());
+            case "FUTURE" -> bookingRepository.findByItemOwnerIdAndStartAfterOrderByStartDesc(
+                    userId, LocalDateTime.now());
+            case "WAITING", "REJECTED" -> bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(
+                    userId, Status.valueOf(state.toUpperCase()));
+            default -> throw new InternalServerErrorException("Был введен некорректный статус" + state);
+        };
+
+        return ResponseEntity.ok(bookingMapper.toBookingDtoList(bookings));
+    }
+}

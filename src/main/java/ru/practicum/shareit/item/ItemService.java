@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item;
 
 import org.springframework.http.ResponseEntity;
+import ru.practicum.shareit.comment.dto.ChangeCommentDto;
+import ru.practicum.shareit.comment.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ChangeItemDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 
@@ -19,4 +21,6 @@ public interface ItemService {
     ResponseEntity<Void> deleteItemById(Long itemId);
 
     ResponseEntity<List<ItemResponseDto>> getAllUserItems(Long userId);
+
+    ResponseEntity<CommentResponseDto> addComment(Long itemId, ChangeCommentDto comment, Long userId);
 }

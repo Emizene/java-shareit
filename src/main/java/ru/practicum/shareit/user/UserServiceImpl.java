@@ -94,31 +94,19 @@ class UserServiceImpl implements UserService {
         return ResponseEntity.ok(userMapper.toUserDto(user));
     }
 
+    //TODO добавить сюда удаление вещей вместе с их владельцем
     @Override
     @Transactional
     public ResponseEntity<Void> deleteUserById(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID %s не найден".formatted(userId)));
 
-//        TODO добавить сюда удаление вещей
-//        // Удалить связи, где пользователь добавлен в друзья другими
-//        Set<User> usersWhoAdded = userRepository.findUsersWhoAddedAsFriend(userId);
-//        usersWhoAdded.forEach(u -> u.getFriends().remove(user));
-//        userRepository.saveAll(usersWhoAdded);
-//
-//        // Удалить дружеские связи пользователя
-//        user.getFriends().clear();
-//
-//        // Удалить лайки
-//        List<Film> likedFilmsCopy = new ArrayList<>(user.getLikedFilms());
-//        likedFilmsCopy.forEach(film -> {
-//            film.getUsersWithLikes().remove(user);
-//        });
-//        filmRepository.saveAll(likedFilmsCopy);
+//        // Удалить связи, где вещи пользователя удаляются вместе с ним как их владельцем
+
 
         userRepository.delete(user);
 
-        log.info("Пользователь с ID: ID={} удалён", userId);
+        log.info("Пользователь с ID={} удалён", userId);
 
         return ResponseEntity.ok().build();
     }

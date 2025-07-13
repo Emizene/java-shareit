@@ -6,6 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.comment.CommentMapper;
+import ru.practicum.shareit.comment.dto.ChangeCommentDto;
+import ru.practicum.shareit.comment.model.Comment;
+import ru.practicum.shareit.comment.dto.CommentResponseDto;
+import ru.practicum.shareit.comment.CommentRepository;
 import ru.practicum.shareit.exception.AccessDeniedException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ChangeItemDto;
@@ -14,6 +20,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +32,9 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final ItemMapper itemMapper;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
+    private final CommentMapper commentMapper;
 
     @Override
     @Transactional
@@ -137,5 +147,27 @@ public class ItemServiceImpl implements ItemService {
 
         log.info("Возвращено {} вещей", items.size());
         return ResponseEntity.ok(itemMapper.toItemDtoList(items));
+    }
+
+    @Override
+    public ResponseEntity<CommentResponseDto> addComment(Long itemId, ChangeCommentDto comment, Long userId) {
+        User author = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
+
+        if (!bookingRepository.hasUserBookedItem(itemId, userId, LocalDateTime.now())) {
+            throw new AccessDeniedException("Нельзя оставить отзыв: вы не брали эту вещь в аренду или аренда не завершена");
+        }
+
+        Comment entity = commentMapper.toEntity(comment);
+        entity.setItem(item);
+        entity.setAuthor(author);
+        entity.setCreated(LocalDateTime.now());
+        commentRepository.save(entity);
+        log.info("Успешное добавление комментария пользователя с ID={} к вещи с ID={}", userId, itemId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toCommentDto(entity));
     }
 }

@@ -7,9 +7,11 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Data
@@ -31,9 +33,9 @@ public class Comment {
     @NotEmpty
     private Item item;
 
-    @NotNull
+    @CreationTimestamp
     @Column(updatable = false)
-    private LocalDateTime created = LocalDateTime.now();
+    private Instant created;
 
     @ManyToOne
     @NotNull

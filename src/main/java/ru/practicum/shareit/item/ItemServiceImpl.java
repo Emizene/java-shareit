@@ -157,14 +157,14 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
 
-        if (!bookingRepository.hasUserBookedItem(itemId, userId, LocalDateTime.now())) {
-            throw new AccessDeniedException("Нельзя оставить отзыв: вы не брали эту вещь в аренду или аренда не завершена");
-        }
+//        if (!bookingRepository.hasUserBookedItem(itemId, userId, LocalDateTime.now())) { FIXME это я убрал
+//            throw new AccessDeniedException("Нельзя оставить отзыв: вы не брали эту вещь в аренду или аренда не завершена");
+//        }
 
         Comment entity = commentMapper.toEntity(comment);
         entity.setItem(item);
         entity.setAuthor(author);
-        entity.setCreated(LocalDateTime.now());
+//        entity.setCreated(LocalDateTime.now());
         commentRepository.save(entity);
         log.info("Успешное добавление комментария пользователя с ID={} к вещи с ID={}", userId, itemId);
 

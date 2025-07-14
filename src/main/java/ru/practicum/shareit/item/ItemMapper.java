@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import ru.practicum.shareit.item.dto.ChangeItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoSimple;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.model.Item;
 
@@ -16,6 +17,8 @@ public interface ItemMapper {
 
     @Mapping(target = "ownerName", source = "owner.name")
     ItemResponseDto toItemDto(Item item);
+
+    ItemDtoSimple toDtoSimple(Item item);
 
     List<ItemResponseDto> toItemDtoList(List<Item> item);
 }

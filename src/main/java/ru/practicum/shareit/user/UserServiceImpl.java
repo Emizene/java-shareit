@@ -26,7 +26,7 @@ class UserServiceImpl implements UserService {
     public ResponseEntity<UserResponseDto> createUser(ChangeUserDto user) {
         log.debug("Создание нового пользователя: email={}", user.getEmail());
         List<User> allUsers = userRepository.findAll().stream()
-                .toList();
+                .toList(); // FIXME можно просто искать по email, а не доставать весь список
         boolean emailExists = allUsers.stream()
                 .anyMatch(u -> u.getEmail().equalsIgnoreCase(user.getEmail()));
         if (emailExists) {

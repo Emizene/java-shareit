@@ -9,10 +9,9 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.dto.ChangeBookingDto;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.exception.AccessDeniedException;
-import ru.practicum.shareit.exception.InternalServerErrorException;
-import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -32,13 +31,25 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public ResponseEntity<BookingResponseDto> createBooking(ChangeBookingDto booking, Long userId) {
-        log.debug("Добавление нового запроса на бронирование с ID {}", booking.getId());
+        log.debug("Добавление нового запроса на бронирование с ID {}", booking.getItemId());
 
-        userRepository.findUserById(userId)
+        User user = userRepository.findUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
+
+        Item item = itemRepository.findById(booking.getItemId())
+                .orElseThrow(() -> new NotFoundException("Вещь с ID " + booking.getItemId() + " не найдена"));
+
+        if (!item.getAvailable()) {
+            throw new InternalServerErrorException("Вещь недоступна для бронирования");
+        }
+
+        if (booking.getEnd().equals(booking.getStart())) {
+            throw new ValidationException("Срок аренды указан некорректно");
+        }
 
         Booking entity = bookingMapper.toEntity(booking);
         entity.setStatus(Status.WAITING);
+        entity.setBooker(user);
         bookingRepository.save(entity);
         log.info("Успешное добавление запроса: ID={}, пользователь с запросом ID={}", entity.getId(), userId);
 
@@ -47,12 +58,10 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public ResponseEntity<BookingResponseDto> updateBooking(ChangeBookingDto booking, Long bookingId, Long userId, Boolean approved) {
+    public ResponseEntity<BookingResponseDto> updateBooking(Long bookingId, Long userId, Boolean approved) {
         log.debug("Обновление статуса запроса с ID {}", bookingId);
 
-        userRepository.findUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
-
+        //FIXME это я убрал
         itemRepository.findByIdAndOwnerId(bookingId, userId)
                 .orElseThrow(() -> new AccessDeniedException("Пользователь не является владельцем: доступ запрещен"));
 
@@ -62,15 +71,13 @@ public class BookingServiceImpl implements BookingService {
                     return new NotFoundException("Запрос с id " + bookingId + " не найден");
                 });
 
-        if (booking.getStatus() != null && !updatedBooking.getStatus().equals(booking.getStatus())) {
-            if (approved) {
-                log.debug("Обновление статуса с {} на {}", booking.getStatus(), updatedBooking.getStatus());
-                updatedBooking.setStatus(Status.APPROVED);
-            }
-            if (!approved) {
-                log.debug("Обновление доступности вещи с {} на {}", booking.getStatus(), updatedBooking.getStatus());
-                updatedBooking.setStatus(Status.REJECTED);
-            }
+        if (approved) {
+            log.debug("Обновление статуса на {}", updatedBooking.getStatus());
+            updatedBooking.setStatus(Status.APPROVED);
+        }
+        if (!approved) {
+            log.debug("Обновление доступности вещи на {}", updatedBooking.getStatus());
+            updatedBooking.setStatus(Status.REJECTED);
         }
 
         bookingRepository.save(updatedBooking);
@@ -86,10 +93,10 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронь с ID %s не найдена".formatted(bookingId)));
 
-        if (!userId.equals(booking.getBooker().getId()) &&
-                !userId.equals(booking.getItem().getOwner().getId())) {
-            throw new AccessDeniedException("Пользователь не является владельцем или автором брони: доступ запрещен");
-        }
+//        if (!userId.equals(booking.getBooker().getId()) && FIXME это я убрал
+//                !userId.equals(booking.getItem().getOwner().getId())) {
+//            throw new AccessDeniedException("Пользователь не является владельцем или автором брони: доступ запрещен");
+//        }
 
         log.info("Найдена бронь: ID={}", bookingId);
 

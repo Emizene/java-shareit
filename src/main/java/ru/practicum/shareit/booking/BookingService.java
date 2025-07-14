@@ -10,7 +10,7 @@ public interface BookingService {
 
     ResponseEntity<BookingResponseDto> createBooking(ChangeBookingDto booking, Long userId);
 
-    ResponseEntity<BookingResponseDto> updateBooking(ChangeBookingDto booking, Long bookingId, Long userId, Boolean approved);
+    ResponseEntity<BookingResponseDto> updateBooking(Long bookingId, Long userId, Boolean approved);
 
     ResponseEntity<BookingResponseDto> getBookingById(Long bookingId, Long userId);
 

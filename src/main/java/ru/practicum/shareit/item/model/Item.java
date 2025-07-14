@@ -31,5 +31,6 @@ public class Item {
 
     @ManyToOne
     @NotNull
+    @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 }

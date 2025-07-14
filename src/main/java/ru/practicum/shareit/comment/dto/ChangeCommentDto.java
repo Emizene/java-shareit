@@ -4,6 +4,7 @@ import lombok.Data;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Data
@@ -11,6 +12,6 @@ public class ChangeCommentDto {
     private Long id;
     private String text;
     private Item item;
-    private LocalDateTime created;
-    private User author;
+    private Instant created;
+//    private User author;
 }

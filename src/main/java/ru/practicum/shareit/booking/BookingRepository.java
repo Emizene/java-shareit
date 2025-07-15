@@ -6,6 +6,7 @@ import ru.practicum.shareit.booking.model.Booking;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
@@ -37,11 +38,15 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByBookerIdAndStatusOrderByStartDesc(
             Long bookerId, Status status);
 
-    default boolean hasUserBookedItem(Long itemId, Long userId, LocalDateTime now) {
-        return countByItemIdAndBookerIdAndEndBeforeAndStatus(
-                itemId, userId, now, Status.APPROVED) > 0;
-    }
+    Boolean existsByBookerIdAndItemIdAndEndBefore(Long bookerId, Long itemId, LocalDateTime now);
 
-    long countByItemIdAndBookerIdAndEndBeforeAndStatus(
-            Long itemId, Long bookerId, LocalDateTime end, Status status);
+//    Optional<Booking> findFirstByBookerIdAndItemIdOrderByStartAsc(Long bookerId, Long itemId);
+//
+//    default boolean hasUserBookedItem(Long itemId, Long userId, LocalDateTime now) {
+//        return countByItemIdAndBookerIdAndEndBeforeAndStatus(
+//                itemId, userId, now, Status.APPROVED) > 0;
+//    }
+//
+//    long countByItemIdAndBookerIdAndEndBeforeAndStatus(
+//            Long itemId, Long bookerId, LocalDateTime end, Status status);
 }

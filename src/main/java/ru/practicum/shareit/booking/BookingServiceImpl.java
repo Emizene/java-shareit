@@ -61,21 +61,17 @@ public class BookingServiceImpl implements BookingService {
     public ResponseEntity<BookingResponseDto> updateBooking(Long bookingId, Long userId, Boolean approved) {
         log.debug("Обновление статуса запроса с ID {}", bookingId);
 
-        //FIXME это я убрал
-        itemRepository.findByIdAndOwnerId(bookingId, userId)
-                .orElseThrow(() -> new AccessDeniedException("Пользователь не является владельцем: доступ запрещен"));
-
         Booking updatedBooking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> {
-                    log.error("Запрос с ID {} не найден для обновления статуса", bookingId);
-                    return new NotFoundException("Запрос с id " + bookingId + " не найден");
-                });
+                .orElseThrow(() -> new NotFoundException("Бронь с ID " + bookingId + " не найдена"));
+
+        if (!updatedBooking.getItem().getOwner().getId().equals(userId)) {
+            throw new AccessDeniedException("Подтвердить бронирование может только владелец вещи");
+        }
 
         if (approved) {
             log.debug("Обновление статуса на {}", updatedBooking.getStatus());
             updatedBooking.setStatus(Status.APPROVED);
-        }
-        if (!approved) {
+        } else {
             log.debug("Обновление доступности вещи на {}", updatedBooking.getStatus());
             updatedBooking.setStatus(Status.REJECTED);
         }
@@ -92,11 +88,6 @@ public class BookingServiceImpl implements BookingService {
 
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронь с ID %s не найдена".formatted(bookingId)));
-
-//        if (!userId.equals(booking.getBooker().getId()) && FIXME это я убрал
-//                !userId.equals(booking.getItem().getOwner().getId())) {
-//            throw new AccessDeniedException("Пользователь не является владельцем или автором брони: доступ запрещен");
-//        }
 
         log.info("Найдена бронь: ID={}", bookingId);
 

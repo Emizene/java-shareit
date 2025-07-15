@@ -15,6 +15,7 @@ import ru.practicum.shareit.comment.CommentRepository;
 import ru.practicum.shareit.exception.AccessDeniedException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ChangeItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoWithBookings;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -102,6 +104,28 @@ public class ItemServiceImpl implements ItemService {
         return ResponseEntity.ok(itemMapper.toItemDto(item));
     }
 
+//    public List<ItemDtoWithBookings> getItemsByOwnerId(Long ownerId) {
+//        return itemRepository.findAllByOwnerId(ownerId).stream().map(itemMapper::toDtoWithBookings).toList();
+//    }
+
+    public ResponseEntity<List<ItemDtoWithBookings>> getItemsById(Long itemId, Long ownerId) {
+        log.debug("Запрос всех вещей пользователя с ID {}", ownerId);
+
+        userRepository.findById(ownerId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID %s не найден".formatted(ownerId)));
+
+        List<Item> items = itemRepository.findAllByOwnerId(ownerId);
+
+        //                    dto.setLastBooking(bookingRepository.findFirstByItemIdAndEndBeforeNow(itemId));
+        //                    dto.setNextBooking(bookingRepository.findFirstByItemIdAndStartAfterNow(itemId));
+        List<ItemDtoWithBookings> result = items.stream()
+                .map(itemMapper::toDtoWithBookings)
+                .collect(Collectors.toList());
+
+        log.info("Найдено {} вещей для пользователя ID={}", result.size(), ownerId);
+        return ResponseEntity.ok(result);
+    }
+
     @Override
     public ResponseEntity<List<ItemResponseDto>> searchItem(String searchText) {
         log.debug("Запрос вещи с названием: searchText={}", searchText);
@@ -149,6 +173,21 @@ public class ItemServiceImpl implements ItemService {
         return ResponseEntity.ok(itemMapper.toItemDtoList(items));
     }
 
+//    @Override
+//    public ResponseEntity<List<ItemDtoWithBookings>> getAllUserItems(Long userId) {
+//        log.debug("Запрос всех вещей пользователя с ID={}", userId);
+//
+//        User owner = userRepository.findById(userId)
+//                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
+//
+//        List<Item> items = itemRepository.findAll().stream()
+//                .filter(e -> Objects.equals(e.getOwner().getId(), owner.getId()))
+//                .toList();
+//
+//        log.info("Возвращено {} вещей", items.size());
+//        return ResponseEntity.ok(itemMapper.toDtoWithBookings(items));
+//    }
+
     @Override
     public ResponseEntity<CommentResponseDto> addComment(Long itemId, ChangeCommentDto comment, Long userId) {
         User author = userRepository.findById(userId)
@@ -157,14 +196,25 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
 
-//        if (!bookingRepository.hasUserBookedItem(itemId, userId, LocalDateTime.now())) { FIXME это я убрал
+//        if (!bookingRepository.hasUserBookedItem(itemId, userId, LocalDateTime.now())) {
 //            throw new AccessDeniedException("Нельзя оставить отзыв: вы не брали эту вещь в аренду или аренда не завершена");
 //        }
 
+//        Booking booking = bookingRepository.findFirstByBookerIdAndItemIdOrderByStartAsc(userId, itemId)
+//                .orElseThrow(() -> new AccessDeniedException("Нельзя оставить отзыв: вы не брали эту вещь в аренду или аренда не завершена"));
+//
+//        if (booking.getEnd().isAfter(LocalDateTime.now())) {
+//            throw new IllegalStateException("Срок аренды ещё не истек");
+//        }
+
+        if (!bookingRepository.existsByBookerIdAndItemIdAndEndBefore(userId, itemId, LocalDateTime.now())) {
+            throw new AccessDeniedException("Нельзя оставить отзыв: вы не брали эту вещь в аренду");
+        }
+
         Comment entity = commentMapper.toEntity(comment);
-        entity.setItem(item);
-        entity.setAuthor(author);
-//        entity.setCreated(LocalDateTime.now());
+//        entity.setItem(item);
+//        entity.setAuthor(author);
+//        entity.setText(comment.getText());
         commentRepository.save(entity);
         log.info("Успешное добавление комментария пользователя с ID={} к вещи с ID={}", userId, itemId);
 

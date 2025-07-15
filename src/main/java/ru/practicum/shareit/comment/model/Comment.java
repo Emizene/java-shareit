@@ -30,7 +30,6 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "item_id")
-    @NotEmpty
     private Item item;
 
     @CreationTimestamp

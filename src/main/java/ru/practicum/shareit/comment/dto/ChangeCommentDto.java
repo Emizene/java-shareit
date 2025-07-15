@@ -9,9 +9,9 @@ import java.time.LocalDateTime;
 
 @Data
 public class ChangeCommentDto {
-    private Long id;
+//    private Long id;
     private String text;
-    private Item item;
-    private Instant created;
+//    private Item item;
+//    private Instant created;
 //    private User author;
 }

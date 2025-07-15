@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.comment.dto.ChangeCommentDto;
 import ru.practicum.shareit.comment.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ChangeItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoWithBookings;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 
 import java.util.List;
@@ -31,10 +32,10 @@ public class ItemController {
         return itemService.updateItem(itemId, item, userId);
     }
 
-    @GetMapping
-    public ResponseEntity<List<ItemResponseDto>> getAllUserItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        return itemService.getAllUserItems(userId);
-    }
+//    @GetMapping
+//    public ResponseEntity<List<ItemResponseDto>> getAllUserItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
+//        return itemService.getAllUserItems(userId);
+//    }
 
     @GetMapping("/search")
     public ResponseEntity<List<ItemResponseDto>> searchItems(@RequestParam(name = "text") String searchText,
@@ -45,6 +46,11 @@ public class ItemController {
     @GetMapping("/{itemId}")
     public ResponseEntity<ItemResponseDto> getItemById(@PathVariable Long itemId) {
         return itemService.getItemById(itemId);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ItemDtoWithBookings>> getItemsByOwner(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        return itemService.getItemsByOwner(userId);
     }
 
     @PostMapping("/{itemId}/comment")

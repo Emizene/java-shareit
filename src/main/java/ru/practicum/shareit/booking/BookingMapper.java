@@ -35,6 +35,7 @@ public abstract class BookingMapper {
 //    @Mapping(target = "item", source = "item.id")
     public abstract BookingResponseDto toBookingDto(Booking booking);
 
+    @Mapping(target = "bookerId", expression = "java(booking.getBooker() != null ? booking.getBooker().getId() : null)")
     public abstract BookingDtoSimple toBookingDtoSimple(Booking booking);
 
     public abstract List<BookingResponseDto> toBookingDtoList(List<Booking> booking);

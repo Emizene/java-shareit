@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,6 +22,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     boolean existsByOwnerId(Long userId);
 
+    @EntityGraph(attributePaths = {"bookings", "comments"})
     @Query("SELECT i FROM Item i LEFT JOIN FETCH i.bookings WHERE i.owner.id = :ownerId")
     List<Item> findAllByOwnerId(@Param("ownerId") Long ownerId);
 }

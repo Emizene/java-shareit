@@ -104,11 +104,8 @@ public class ItemServiceImpl implements ItemService {
         return ResponseEntity.ok(itemMapper.toItemDto(item));
     }
 
-//    public List<ItemDtoWithBookings> getItemsByOwnerId(Long ownerId) {
-//        return itemRepository.findAllByOwnerId(ownerId).stream().map(itemMapper::toDtoWithBookings).toList();
-//    }
-
-    public ResponseEntity<List<ItemDtoWithBookings>> getItemsById(Long itemId, Long ownerId) {
+    @Override
+    public ResponseEntity<List<ItemDtoWithBookings>> getItemsByOwner(Long ownerId) {
         log.debug("Запрос всех вещей пользователя с ID {}", ownerId);
 
         userRepository.findById(ownerId)
@@ -116,8 +113,6 @@ public class ItemServiceImpl implements ItemService {
 
         List<Item> items = itemRepository.findAllByOwnerId(ownerId);
 
-        //                    dto.setLastBooking(bookingRepository.findFirstByItemIdAndEndBeforeNow(itemId));
-        //                    dto.setNextBooking(bookingRepository.findFirstByItemIdAndStartAfterNow(itemId));
         List<ItemDtoWithBookings> result = items.stream()
                 .map(itemMapper::toDtoWithBookings)
                 .collect(Collectors.toList());
@@ -125,6 +120,7 @@ public class ItemServiceImpl implements ItemService {
         log.info("Найдено {} вещей для пользователя ID={}", result.size(), ownerId);
         return ResponseEntity.ok(result);
     }
+
 
     @Override
     public ResponseEntity<List<ItemResponseDto>> searchItem(String searchText) {
@@ -158,20 +154,20 @@ public class ItemServiceImpl implements ItemService {
         return ResponseEntity.ok().build();
     }
 
-    @Override
-    public ResponseEntity<List<ItemResponseDto>> getAllUserItems(Long userId) {
-        log.debug("Запрос всех вещей пользователя с ID={}", userId);
-
-        User owner = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
-
-        List<Item> items = itemRepository.findAll().stream()
-                .filter(e -> Objects.equals(e.getOwner().getId(), owner.getId()))
-                .toList();
-
-        log.info("Возвращено {} вещей", items.size());
-        return ResponseEntity.ok(itemMapper.toItemDtoList(items));
-    }
+//    @Override
+//    public ResponseEntity<List<ItemResponseDto>> getAllUserItems(Long userId) {
+//        log.debug("Запрос всех вещей пользователя с ID={}", userId);
+//
+//        User owner = userRepository.findById(userId)
+//                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
+//
+//        List<Item> items = itemRepository.findAll().stream()
+//                .filter(e -> Objects.equals(e.getOwner().getId(), owner.getId()))
+//                .toList();
+//
+//        log.info("Возвращено {} вещей", items.size());
+//        return ResponseEntity.ok(itemMapper.toItemDtoList(items));
+//    }
 
 //    @Override
 //    public ResponseEntity<List<ItemDtoWithBookings>> getAllUserItems(Long userId) {
@@ -211,7 +207,7 @@ public class ItemServiceImpl implements ItemService {
             throw new AccessDeniedException("Нельзя оставить отзыв: вы не брали эту вещь в аренду");
         }
 
-        Comment entity = commentMapper.toEntity(comment);
+        Comment entity = commentMapper.toEntity(comment, author, item);
 //        entity.setItem(item);
 //        entity.setAuthor(author);
 //        entity.setText(comment.getText());

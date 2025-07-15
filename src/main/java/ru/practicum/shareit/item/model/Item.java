@@ -4,21 +4,20 @@ import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.user.model.User;
 
-import java.time.LocalDateTime;
-import java.util.Comparator;
+import java.util.Objects;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @Valid
 @NoArgsConstructor
+@Builder
 @Entity
 @Table(name = "items")
 public class Item {
@@ -46,21 +45,34 @@ public class Item {
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Comment> comments;
 
-    @Transient
-    public Booking getNextBooking() {
-        if (this.bookings == null) return null;
-        return this.bookings.stream()
-                .filter(b -> b.getStart().isAfter(LocalDateTime.now()))
-                .min(Comparator.comparing(Booking::getStart))
-                .orElse(null);
+//    @Transient
+//    public Booking getNextBooking() {
+//        if (this.bookings == null) return null;
+//        return this.bookings.stream()
+//                .filter(b -> b.getStart().isAfter(LocalDateTime.now()))
+//                .min(Comparator.comparing(Booking::getStart))
+//                .orElse(null);
+//    }
+//
+//    @Transient
+//    public Booking getLastBooking() {
+//        if (this.bookings == null) return null;
+//        return this.bookings.stream()
+//                .filter(b -> b.getEnd().isBefore(LocalDateTime.now()))
+//                .max(Comparator.comparing(Booking::getEnd))
+//                .orElse(null);
+//    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 
-    @Transient
-    public Booking getLastBooking() {
-        if (this.bookings == null) return null;
-        return this.bookings.stream()
-                .filter(b -> b.getEnd().isBefore(LocalDateTime.now()))
-                .max(Comparator.comparing(Booking::getEnd))
-                .orElse(null);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Item item = (Item) o;
+        return Objects.equals(id, item.id);
     }
 }

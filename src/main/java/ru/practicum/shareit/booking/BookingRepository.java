@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.booking.dto.BookingDtoSimple;
 import ru.practicum.shareit.booking.model.Booking;
 
 import java.time.LocalDateTime;
@@ -39,6 +40,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             Long bookerId, Status status);
 
     Boolean existsByBookerIdAndItemIdAndEndBefore(Long bookerId, Long itemId, LocalDateTime now);
+
+//    BookingDtoSimple findLastByItemId(Long itemId);
+//
+//    BookingDtoSimple findNextByItemId(Long itemId);
 
 //    Optional<Booking> findFirstByBookerIdAndItemIdOrderByStartAsc(Long bookerId, Long itemId);
 //

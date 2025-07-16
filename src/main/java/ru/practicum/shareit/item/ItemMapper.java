@@ -3,8 +3,8 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.BookingMapper;
-import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.booking.dto.BookingDtoSimple;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.comment.CommentMapper;
 import ru.practicum.shareit.comment.dto.CommentResponseDto;
 import ru.practicum.shareit.comment.model.Comment;
@@ -14,14 +14,14 @@ import ru.practicum.shareit.item.dto.ItemDtoWithBookings;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.model.Item;
 
-import java.time.Instant;
-import java.time.chrono.ChronoLocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-//@Mapper(componentModel = "spring", uses = {BookingMapper.class})
 @Component
 @RequiredArgsConstructor
 public class ItemMapper {
@@ -57,6 +57,7 @@ public class ItemMapper {
                 .nextBooking(mapNextBooking(item))
                 .lastBooking(mapLastBooking(item))
                 .comments(mapComments(item.getComments()))
+                .ownerName(item.getOwner() != null ? item.getOwner().getName() : null)
                 .build();
     }
 
@@ -73,21 +74,17 @@ public class ItemMapper {
                 .collect(Collectors.toList());
     }
 
-    private BookingDtoSimple mapNextBooking(Item item) {
+    public BookingDtoSimple mapNextBooking(Item item) {
         return item.getBookings().stream()
-                .filter(booking -> booking.getStart().isAfter(ChronoLocalDateTime.from(Instant.now())))
-                .filter(booking -> booking.getStatus() == Status.APPROVED)
-                .findFirst()
-                .map(bookingMapper::toBookingDtoSimple)
-                .orElse(null);
+                .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
+                .min(Comparator.comparing(Booking::getStart))
+                .map(bookingMapper::toBookingDtoSimple).orElse(null);
     }
 
-    private BookingDtoSimple mapLastBooking(Item item) {
+    public BookingDtoSimple mapLastBooking(Item item) {
         return item.getBookings().stream()
-                .filter(booking -> booking.getEnd().isBefore(ChronoLocalDateTime.from(Instant.now())))
-                .filter(booking -> booking.getStatus() == Status.APPROVED)
-                .findFirst()
-                .map(bookingMapper::toBookingDtoSimple)
+                .filter(booking -> booking.getEnd().toLocalDate().isBefore(LocalDate.now()))
+                .max(Comparator.comparing(Booking::getStart)).map(bookingMapper::toBookingDtoSimple)
                 .orElse(null);
     }
 
@@ -98,18 +95,3 @@ public class ItemMapper {
                 .collect(Collectors.toList());
     }
 }
-
-//    @Mapping(target = "owner", ignore = true)
-//    Item toEntity(ChangeItemDto changeItemDto);
-//
-//    @Mapping(target = "ownerName", source = "owner.name")
-//    ItemResponseDto toItemDto(Item item);
-//
-//    @Mapping(target = "nextBooking", source = "nextBooking")
-//    @Mapping(target = "lastBooking", source = "lastBooking")
-//    ItemDtoWithBookings toDtoWithBookings(Item item);
-//
-//    ItemDtoSimple toItemDtoSimple(Item item);
-//
-//    List<ItemResponseDto> toItemDtoList(List<Item> item);
-//}

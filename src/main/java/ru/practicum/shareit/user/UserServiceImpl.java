@@ -46,17 +46,6 @@ class UserServiceImpl implements UserService {
     public ResponseEntity<UserResponseDto> updateUser(ChangeUserDto user, Long userId) {
         log.debug("Обновление существующего пользователя с ID {}", userId);
 
-//        List<User> allUsers = userRepository.findAll().stream()
-//                .toList();
-//
-//        User updatedUser = allUsers.stream()
-//                .filter(u -> Objects.equals(u.getId(), user.getId()))
-//                .findFirst()
-//                .orElseThrow(() -> {
-//                    log.error("Пользователь с ID {} не найден для обновления", user.getId());
-//                    return new NotFoundException("Пользователь с id " + user.getId() + " не найден");
-//                });
-
         User updatedUser = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("Пользователь с ID {} не найден для обновления", user.getId());
@@ -94,15 +83,11 @@ class UserServiceImpl implements UserService {
         return ResponseEntity.ok(userMapper.toUserDto(user));
     }
 
-    //TODO добавить сюда удаление вещей вместе с их владельцем
     @Override
     @Transactional
     public ResponseEntity<Void> deleteUserById(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID %s не найден".formatted(userId)));
-
-//        // Удалить связи, где вещи пользователя удаляются вместе с ним как их владельцем
-
 
         userRepository.delete(user);
 

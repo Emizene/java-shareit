@@ -1,10 +1,9 @@
 package ru.practicum.shareit.user;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.ChangeUserDto;
 import ru.practicum.shareit.user.dto.UserResponseDto;
 

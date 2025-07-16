@@ -13,5 +13,3 @@ public class CommentResponseDto {
     private Instant created;
     private String authorName;
 }
-
-//    private Item item;

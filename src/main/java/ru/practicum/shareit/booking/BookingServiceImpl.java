@@ -9,14 +9,16 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.dto.ChangeBookingDto;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.exception.*;
+import ru.practicum.shareit.exception.AccessDeniedException;
+import ru.practicum.shareit.exception.InternalServerErrorException;
+import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j

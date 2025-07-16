@@ -45,24 +45,6 @@ public class Item {
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Comment> comments;
 
-//    @Transient
-//    public Booking getNextBooking() {
-//        if (this.bookings == null) return null;
-//        return this.bookings.stream()
-//                .filter(b -> b.getStart().isAfter(LocalDateTime.now()))
-//                .min(Comparator.comparing(Booking::getStart))
-//                .orElse(null);
-//    }
-//
-//    @Transient
-//    public Booking getLastBooking() {
-//        if (this.bookings == null) return null;
-//        return this.bookings.stream()
-//                .filter(b -> b.getEnd().isBefore(LocalDateTime.now()))
-//                .max(Comparator.comparing(Booking::getEnd))
-//                .orElse(null);
-//    }
-
     @Override
     public int hashCode() {
         return Objects.hash(id);

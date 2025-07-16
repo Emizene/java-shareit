@@ -13,7 +13,6 @@ import ru.practicum.shareit.user.UserRepository;
 
 import java.util.List;
 
-
 @Mapper(componentModel = "spring", uses = UserMapper.class)
 public abstract class BookingMapper {
 
@@ -25,14 +24,9 @@ public abstract class BookingMapper {
 
     @Mapping(target = "item", expression = "java(itemRepository.findById(changeBookingDto.getItemId()).orElse(null))")
     @Mapping(target = "id", ignore = true)
-//    @Mapping(target = "booker", source = "booker")
     public abstract Booking toEntity(ChangeBookingDto changeBookingDto);
 
-    //    @Mapping(target = "bookerId", source = "booker.id")
-
     @Mapping(target = "booker", source = "booker")
-//    @Mapping(target = "booker", source = "booker.id")
-//    @Mapping(target = "item", source = "item.id")
     public abstract BookingResponseDto toBookingDto(Booking booking);
 
     @Mapping(target = "bookerId", expression = "java(booking.getBooker() != null ? booking.getBooker().getId() : null)")

@@ -18,4 +18,5 @@ public class ItemDtoWithBookings {
     private BookingDtoSimple nextBooking;
     private BookingDtoSimple lastBooking;
     private List<CommentResponseDto> comments;
+    private String ownerName;
 }

@@ -15,15 +15,13 @@ public interface ItemService {
 
     ResponseEntity<ItemResponseDto> updateItem(Long itemId, ChangeItemDto item, Long userId);
 
-    ResponseEntity<ItemResponseDto> getItemById(Long itemId);
+    ResponseEntity<ItemDtoWithBookings> getItemById(Long itemId);
 
     ResponseEntity<List<ItemDtoWithBookings>> getItemsByOwner(Long userId);
 
     ResponseEntity<List<ItemResponseDto>> searchItem(String searchText);
 
     ResponseEntity<Void> deleteItemById(Long itemId);
-
-//    ResponseEntity<List<ItemResponseDto>> getAllUserItems(Long userId);
 
     ResponseEntity<CommentResponseDto> addComment(Long itemId, ChangeCommentDto comment, Long userId);
 }

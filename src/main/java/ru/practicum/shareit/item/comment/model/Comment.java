@@ -33,9 +33,8 @@ public class Comment {
     @JoinColumn(name = "item_id")
     private Item item;
 
-    @NotNull
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(updatable = false, nullable = false)
     private Instant created;
 
     @ManyToOne

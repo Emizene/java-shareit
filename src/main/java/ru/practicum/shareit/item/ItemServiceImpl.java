@@ -6,17 +6,25 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.item.comment.CommentMapper;
+import ru.practicum.shareit.item.comment.CommentRepository;
+import ru.practicum.shareit.item.comment.dto.ChangeCommentDto;
+import ru.practicum.shareit.item.comment.dto.CommentResponseDto;
+import ru.practicum.shareit.item.comment.model.Comment;
 import ru.practicum.shareit.exception.AccessDeniedException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ChangeItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoWithBookings;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -25,6 +33,9 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final ItemMapper itemMapper;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
+    private final CommentMapper commentMapper;
 
     @Override
     @Transactional
@@ -81,7 +92,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ResponseEntity<ItemResponseDto> getItemById(Long itemId) {
+    public ResponseEntity<ItemDtoWithBookings> getItemById(Long itemId) {
         log.debug("Запрос вещи с ID {}", itemId);
 
         Item item = itemRepository.findById(itemId)
@@ -89,7 +100,24 @@ public class ItemServiceImpl implements ItemService {
 
         log.info("Найдена вещь: ID={}", itemId);
 
-        return ResponseEntity.ok(itemMapper.toItemDto(item));
+        return ResponseEntity.ok(itemMapper.toDtoWithBookings(item));
+    }
+
+    @Override
+    public ResponseEntity<List<ItemDtoWithBookings>> getItemsByOwner(Long ownerId) {
+        log.debug("Запрос всех вещей пользователя с ID {}", ownerId);
+
+        userRepository.findById(ownerId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID %s не найден".formatted(ownerId)));
+
+        List<Item> items = itemRepository.findAllByOwnerId(ownerId);
+
+        List<ItemDtoWithBookings> result = items.stream()
+                .map(itemMapper::toDtoWithBookings)
+                .collect(Collectors.toList());
+
+        log.info("Найдено {} вещей для пользователя ID={}", result.size(), ownerId);
+        return ResponseEntity.ok(result);
     }
 
     @Override
@@ -125,17 +153,22 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ResponseEntity<List<ItemResponseDto>> getAllUserItems(Long userId) {
-        log.debug("Запрос всех вещей пользователя с ID={}", userId);
+    public ResponseEntity<CommentResponseDto> addComment(Long itemId, ChangeCommentDto comment, Long userId) {
+        User author = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
 
-        User owner = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
 
-        List<Item> items = itemRepository.findAll().stream()
-                .filter(e -> Objects.equals(e.getOwner().getId(), owner.getId()))
-                .toList();
+        if (!bookingRepository.existsByBookerIdAndItemIdAndEndBefore(userId, itemId, LocalDateTime.now())) {
+            throw new AccessDeniedException("Нельзя оставить отзыв: вы не брали эту вещь в аренду");
+        }
 
-        log.info("Возвращено {} вещей", items.size());
-        return ResponseEntity.ok(itemMapper.toItemDtoList(items));
+        Comment entity = commentMapper.toEntity(comment, author, item);
+
+        commentRepository.save(entity);
+        log.info("Успешное добавление комментария пользователя с ID={} к вещи с ID={}", userId, itemId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentMapper.toCommentDto(entity));
     }
 }

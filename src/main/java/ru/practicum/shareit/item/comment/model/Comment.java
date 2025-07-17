@@ -1,4 +1,4 @@
-package ru.practicum.shareit.comment.model;
+package ru.practicum.shareit.item.comment.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
@@ -33,6 +33,7 @@ public class Comment {
     @JoinColumn(name = "item_id")
     private Item item;
 
+    @NotNull
     @CreationTimestamp
     @Column(updatable = false)
     private Instant created;

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.comment.model.Comment;
+import ru.practicum.shareit.item.comment.model.Comment;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.Objects;

@@ -91,6 +91,13 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронь с ID %s не найдена".formatted(bookingId)));
 
+        boolean isAuthor = booking.getBooker().getId().equals(userId);
+        boolean isOwner = booking.getItem().getOwner().getId().equals(userId);
+
+        if (!isAuthor && !isOwner) {
+            throw new AccessDeniedException("Доступ запрещен: пользователь не является ни автором бронирования, ни владельцем вещи");
+        }
+
         log.info("Найдена бронь: ID={}", bookingId);
 
         return ResponseEntity.ok(bookingMapper.toBookingDto(booking));

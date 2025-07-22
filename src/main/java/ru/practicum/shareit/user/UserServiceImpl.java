@@ -26,7 +26,7 @@ class UserServiceImpl implements UserService {
     public ResponseEntity<UserResponseDto> createUser(ChangeUserDto user) {
         log.debug("Создание нового пользователя: email={}", user.getEmail());
         List<User> allUsers = userRepository.findAll().stream()
-                .toList();
+                .toList(); // FIXME можно просто искать по email, а не доставать весь список
         boolean emailExists = allUsers.stream()
                 .anyMatch(u -> u.getEmail().equalsIgnoreCase(user.getEmail()));
         if (emailExists) {
@@ -45,17 +45,6 @@ class UserServiceImpl implements UserService {
     @Transactional
     public ResponseEntity<UserResponseDto> updateUser(ChangeUserDto user, Long userId) {
         log.debug("Обновление существующего пользователя с ID {}", userId);
-
-//        List<User> allUsers = userRepository.findAll().stream()
-//                .toList();
-//
-//        User updatedUser = allUsers.stream()
-//                .filter(u -> Objects.equals(u.getId(), user.getId()))
-//                .findFirst()
-//                .orElseThrow(() -> {
-//                    log.error("Пользователь с ID {} не найден для обновления", user.getId());
-//                    return new NotFoundException("Пользователь с id " + user.getId() + " не найден");
-//                });
 
         User updatedUser = userRepository.findById(userId)
                 .orElseThrow(() -> {
@@ -100,25 +89,9 @@ class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID %s не найден".formatted(userId)));
 
-//        TODO добавить сюда удаление вещей
-//        // Удалить связи, где пользователь добавлен в друзья другими
-//        Set<User> usersWhoAdded = userRepository.findUsersWhoAddedAsFriend(userId);
-//        usersWhoAdded.forEach(u -> u.getFriends().remove(user));
-//        userRepository.saveAll(usersWhoAdded);
-//
-//        // Удалить дружеские связи пользователя
-//        user.getFriends().clear();
-//
-//        // Удалить лайки
-//        List<Film> likedFilmsCopy = new ArrayList<>(user.getLikedFilms());
-//        likedFilmsCopy.forEach(film -> {
-//            film.getUsersWithLikes().remove(user);
-//        });
-//        filmRepository.saveAll(likedFilmsCopy);
-
         userRepository.delete(user);
 
-        log.info("Пользователь с ID: ID={} удалён", userId);
+        log.info("Пользователь с ID={} удалён", userId);
 
         return ResponseEntity.ok().build();
     }

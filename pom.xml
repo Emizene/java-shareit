@@ -21,6 +21,11 @@
         <lombok.version>1.18.30</lombok.version>
     </properties>
 
+    <modules>
+        <module>gateway</module>
+        <module>server</module>
+    </modules>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>

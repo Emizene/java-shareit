@@ -5,10 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class ChangeUserDto {
-    private Long id;
+@AllArgsConstructor
+public class UserTestDto {
     private String email;
     private String name;
 }

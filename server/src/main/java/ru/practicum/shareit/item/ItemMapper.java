@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.BookingMapper;
@@ -23,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
+@Builder
 @RequiredArgsConstructor
 public class ItemMapper {
     private final BookingMapper bookingMapper;

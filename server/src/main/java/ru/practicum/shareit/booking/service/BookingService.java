@@ -16,7 +16,7 @@ public interface BookingService {
 
     ResponseEntity<Void> deleteBookingById(Long bookingId);
 
-    ResponseEntity<List<BookingResponseDto>> getAllUserBookings(Long userId, String status);
+    ResponseEntity<List<BookingResponseDto>> getAllUserBookings(Long userId, String state);
 
-    ResponseEntity<List<BookingResponseDto>> getAllOwnerBookings(Long userId, String status);
+    ResponseEntity<List<BookingResponseDto>> getAllOwnerBookings(Long userId, String state);
 }

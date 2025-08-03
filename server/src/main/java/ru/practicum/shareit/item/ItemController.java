@@ -35,8 +35,7 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<ItemResponseDto>> searchItems(@RequestParam(name = "text") String searchText,
-                                                             @RequestHeader(SharedHeaders.USER_ID_HEADER) Long userId) {
+    public ResponseEntity<List<ItemResponseDto>> searchItems(@RequestParam(name = "text") String searchText) {
         return itemService.searchItem(searchText);
     }
 

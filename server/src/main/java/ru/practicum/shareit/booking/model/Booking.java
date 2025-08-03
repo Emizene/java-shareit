@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking.model;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.Status;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Valid
 @NoArgsConstructor
+@Builder
 @Entity
 @Table(name = "bookings")
 public class Booking {

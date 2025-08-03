@@ -1,13 +1,17 @@
 package ru.practicum.shareit.request.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.practicum.shareit.item.dto.ItemDtoSimple;
 
 import java.time.Instant;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class ItemRequestResponseDto {
     private Long id;
@@ -15,4 +19,11 @@ public class ItemRequestResponseDto {
     private Instant created;
     private Long requestorId;
     private List<ItemDtoSimple> items;
+
+    public ItemRequestResponseDto(Long id, String description, Instant created, Long requestorId) {
+        this.id = id;
+        this.description = description;
+        this.created = created;
+        this.requestorId = requestorId;
+    }
 }

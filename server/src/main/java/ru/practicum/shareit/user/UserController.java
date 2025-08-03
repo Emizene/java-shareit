@@ -7,10 +7,12 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.ChangeUserDto;
 import ru.practicum.shareit.user.dto.UserResponseDto;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-@Valid
+@Valid //FIXME убрать валидацию из сервиса
 public class UserController {
     private final UserService userService;
 
@@ -32,5 +34,10 @@ public class UserController {
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> deleteUserById(@PathVariable Long userId) {
         return userService.deleteUserById(userId);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
+        return userService.getAllUsers();
     }
 }

@@ -35,9 +35,4 @@ public class UserController {
     public ResponseEntity<Void> deleteUserById(@PathVariable Long userId) {
         return userService.deleteUserById(userId);
     }
-
-    @GetMapping
-    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
-        return userService.getAllUsers();
-    }
 }

@@ -87,6 +87,7 @@ class BookingServiceTest {
         when(userRepository.findUserById(userId)).thenReturn(Optional.of(user));
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
         when(bookingRepository.save(any(Booking.class))).thenReturn(savedBooking);
+        when(bookingMapper.toEntity(any())).thenReturn(savedBooking);
 
         var response = bookingService.createBooking(request, userId);
 
@@ -229,10 +230,6 @@ class BookingServiceTest {
 
     private static Booking getCorrectBookingWithStatusAll() {
         return new Booking(1L, now().minusDays(1), now().plusDays(1), getCorrectItem(), getCorrectUser(), Status.ALL);
-    }
-
-    private static Booking getCorrectBookingWithStatusWaiting() {
-        return new Booking(1L, now().minusDays(1), now().plusDays(1), getCorrectItem(), getCorrectUser(), Status.WAITING);
     }
 
     private static Booking getCorrectBookingWithStatusCurrent() {

@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.SharedHeaders;
-import ru.practicum.shareit.item.dto.ChangeCommentDto;
+import ru.practicum.shareit.item.dto.comment.ChangeCommentDto;
 import ru.practicum.shareit.item.dto.ChangeItemDto;
 
 @Controller

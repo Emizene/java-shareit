@@ -1,11 +1,13 @@
 package item;
 
+import jakarta.persistence.Id;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.Status;
@@ -15,19 +17,25 @@ import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.comment.CommentMapper;
 import ru.practicum.shareit.item.comment.CommentRepository;
+import ru.practicum.shareit.item.comment.dto.ChangeCommentDto;
 import ru.practicum.shareit.item.comment.dto.CommentResponseDto;
 import ru.practicum.shareit.item.comment.model.Comment;
 import ru.practicum.shareit.item.dto.ChangeItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithBookings;
+import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemServiceImpl;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
+import java.nio.file.AccessDeniedException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import static java.time.LocalDateTime.now;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -52,40 +60,38 @@ class ItemServiceTest {
     @Mock
     private CommentMapper commentMapper;
 
-    private final Long id = 1L;
-    private final User user = new User(id, "User", "user@yandex.ru");
+    private static final Long ID = 1L;
+    private final User user = new User(ID, "User", "user@yandex.ru");
     private final User notOwner = new User(2L, "User2", "user2@yandex.ru");
-    private final ChangeItemDto changeItemDto = new ChangeItemDto(id, "Item", "Description", true, null);
-    private final ItemDtoWithBookings itemDtoOut = new ItemDtoWithBookings(id, "Item", "Description", true, "User");
-    private final Item item = new Item(id, "Item", "Description", true, user, null);
-    private final CommentResponseDto commentDto = new CommentResponseDto(id, "Text", Instant.now(), "User");
-    private final Comment comment = new Comment(id, "Text", item, Instant.now(), user);
-    private final Booking booking = new Booking(id, null, null, item, user, Status.WAITING);
+    private final ChangeItemDto changeItemDto = new ChangeItemDto(ID, "Item", "Description", true, null);
+    private final ItemDtoWithBookings itemDtoOut = new ItemDtoWithBookings(ID, "Item", "Description", true, "User");
+    private final Item item = new Item(ID, "Item", "Description", true, user, null);
+    private final CommentResponseDto commentDto = new CommentResponseDto(ID, "Text", Instant.now(), "User");
+    private final Comment comment = new Comment(ID, "Text", item, Instant.now(), user);
+    private final Booking booking = new Booking(ID, null, null, item, user, Status.WAITING);
 
-//    @Test
-//    void testSuccessCreateItem_whenUserFound_thenSavedItem() {
-//        ChangeItemDto requestDto = new ChangeItemDto(null, "Item", "Description", true, null);
-//        Item newItem = new Item(null, "Item", "Description", true, user, null);
-//        Item savedItem = new Item(id, "Item", "Description", true, user, null);
-//
-//        // Настройка моков
-//        when(userRepository.findById(id)).thenReturn(Optional.of(user));
-//        when(itemMapper.toItem(requestDto)).thenReturn(newItem);
-//        when(itemRepository.save(newItem)).thenReturn(savedItem);
-//        when(itemMapper.toItemDto(savedItem)).thenReturn(itemDtoOut);
-//
-//        // Выполнение
-//        var actualItemDto = itemService.createItem(requestDto, id);
-//
-//        // Проверки
-//        verify(userRepository).findById(id);
-//        verify(itemMapper).toItem(requestDto);
-//        verify(itemRepository).save(newItem);
-//        verify(itemMapper).toItemDto(savedItem);
-//
-//        Assertions.assertNotNull(actualItemDto);
-//        Assertions.assertEquals(itemDtoOut, actualItemDto);
-//    }
+    @Test
+    void testSuccessCreateItem_whenUserFound_thenSavedItem() {
+        ItemResponseDto itemResponseDto = new ItemResponseDto(null, "Item", "Description", true, "User", null);
+        ChangeItemDto requestDto = new ChangeItemDto(null, "Item", "Description", true, null);
+        Item newItem = new Item(null, "Item", "Description", true, user, null);
+        Item savedItem = new Item(ID, "Item", "Description", true, user, null);
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        when(itemMapper.toEntity(any())).thenReturn(newItem);
+        when(itemRepository.save(any())).thenReturn(savedItem);
+        when(itemMapper.toItemDto(any())).thenReturn(itemResponseDto);
+
+        var actualItemDto = itemService.createItem(requestDto, ID);
+
+        verify(userRepository).findById(anyLong());
+        verify(itemMapper).toEntity(any());
+        verify(itemRepository).save(any());
+        verify(itemMapper).toItemDto(any());
+
+        Assertions.assertNotNull(actualItemDto);
+        Assertions.assertEquals(ResponseEntity.status(201).body(itemResponseDto), actualItemDto);
+    }
 
     @Test
     void testCreateItem_whenUserNotFound_thenNotSavedItem() {
@@ -97,14 +103,16 @@ class ItemServiceTest {
 
 //    @Test
 //    void testSuccessUpdateItem_whenUserIsOwner_thenUpdatedItem() {
-//        when(userRepository.findById(id)).thenReturn(Optional.of(user));
-//        when(itemRepository.findById(id)).thenReturn(Optional.of(item));
+//        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+//        when(itemRepository.findByIdAndOwnerId(anyLong(), anyLong())).thenReturn(Optional.of(item));
+//        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
 //        when(itemRepository.save(any())).thenReturn(item);
+//        when(itemMapper.toItemDto(any())).thenReturn(any());
 //
-//        var actualItemDto = itemService.updateItem(id, changeItemDto, id);
+//        var actualItemDto = itemService.updateItem(ID, changeItemDto, ID);
 //
 //        Assertions.assertNotNull(actualItemDto);
-//        verify(itemMapper).toDtoWithBookings(item);
+//        verify(itemMapper).toItemDto(any());
 //    }
 
 //    @Test
@@ -145,10 +153,10 @@ class ItemServiceTest {
 
     @Test
     void testGetItemsByOwner_CorrectArgumentsForPaging_thenReturnItems() {
-        when(userRepository.findById(id)).thenReturn(Optional.of(user));
+        when(userRepository.findById(ID)).thenReturn(Optional.of(user));
         when(itemRepository.findAllByOwnerId(anyLong())).thenReturn(List.of(item));
 
-        var response = itemService.getItemsByOwner(id);
+        var response = itemService.getItemsByOwner(ID);
         List<ItemDtoWithBookings> targetItems = response.getBody();
 
         Assertions.assertNotNull(targetItems);
@@ -158,26 +166,31 @@ class ItemServiceTest {
 
 //    @Test
 //    void testSaveNewComment_whenUserWasBooker_thenSavedComment() {
+//        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+//        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
 //        when(bookingRepository.existsByBookerIdAndItemIdAndEndBefore(
 //                anyLong(), anyLong(), any()))
 //                .thenReturn(true);
-//        when(userRepository.findById(id)).thenReturn(Optional.of(user));
-//        when(commentRepository.save(any())).thenReturn(comment);
-//        when(itemRepository.findById(id)).thenReturn(Optional.of(item));
+//        when(commentRepository.save(any())).thenReturn(commentDto);
+//        when(itemMapper.toItemDto(any())).thenReturn(any());
 //
-//        var actualComment = itemService.addComment(id, new ChangeCommentDto("abc"), id);
+//        var actualComment = itemService.addComment(ID, getComment(), ID);
 //
 //        Assertions.assertEquals(commentDto.getText(), actualComment.getText());
 //        verify(commentMapper).toCommentDto(comment);
 //    }
 
-//    @Test
-//    void testSaveNewComment_whenUserWasNotBooker_thenThrownException() {
-//        when(bookingRepository.existsByBookerIdAndItemIdAndEndBefore(
-//                anyLong(), anyLong(), any()))
-//                .thenReturn(false);
-//
-//        Assertions.assertThrows(AccessDeniedException.class,
-//                () -> itemService.addComment(2L, new ChangeCommentDto("Text"), id));
-//    }
+    @Test
+    void testSaveNewComment_whenUserWasNotBooker_thenThrownException() throws Exception {
+        when(bookingRepository.existsByBookerIdAndItemIdAndEndBefore(
+                anyLong(), anyLong(), any()))
+                .thenReturn(false);
+
+        Assertions.assertThrows(AccessDeniedException.class,
+                () -> itemService.addComment(2L, new ChangeCommentDto("Text"), ID));
+    }
+
+    private static ChangeCommentDto getComment() {
+        return new ChangeCommentDto("Text");
+    }
 }

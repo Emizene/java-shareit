@@ -19,9 +19,10 @@ import ru.practicum.shareit.user.model.User;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = UserController.class)
 @ContextConfiguration(classes = {UserController.class})
@@ -39,25 +40,13 @@ class UserControllerTest {
     private final UserResponseDto changeUserDto = new UserResponseDto(1L, "user@yandex.ru", "User");
     private final User user = new User(1L, "User", "user@yandex.ru");
 
-//    @Test
-//    void testSuccessGelAllUsers_shouldReturnEmptyList() throws Exception {
-//        when(userService.getAllUsers())
-//                .thenReturn(ResponseEntity.of(Optional.empty()));
-//
-//        mockMvc.perform(get("/users"))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json("[]"));
-//
-//        verify(userService, times(1)).getAllUsers();
-//    }
-
     @Test
     void testSuccessCreateUser() throws Exception {
         when(userService.createUser(any(ChangeUserDto.class)))
                 .thenReturn(ResponseEntity.ok(changeUserDto));
 
         mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
@@ -70,13 +59,13 @@ class UserControllerTest {
     @Test
     void testSuccessUpdateUser() throws Exception {
         UserTestDto updateRequest = new UserTestDto("updated@yandex.ru", "Updated");
-        UserResponseDto updatedUser = new UserResponseDto(1L,"updated@yandex.ru", "Updated");
+        UserResponseDto updatedUser = new UserResponseDto(1L, "updated@yandex.ru", "Updated");
 
         when(userService.updateUser(any(ChangeUserDto.class), anyLong()))
                 .thenReturn(ResponseEntity.ok(updatedUser));
 
         mockMvc.perform(patch("/users/1")
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))

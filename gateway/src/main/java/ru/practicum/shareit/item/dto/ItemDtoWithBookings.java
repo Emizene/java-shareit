@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.Data;
 import ru.practicum.shareit.booking.dto.BookingDtoSimple;
+import ru.practicum.shareit.item.dto.comment.CommentResponseDto;
 
 import java.util.List;
 

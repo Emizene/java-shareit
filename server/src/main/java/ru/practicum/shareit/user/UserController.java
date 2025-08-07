@@ -7,12 +7,10 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.ChangeUserDto;
 import ru.practicum.shareit.user.dto.UserResponseDto;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-@Valid //FIXME убрать валидацию из сервиса
+@Valid
 public class UserController {
     private final UserService userService;
 

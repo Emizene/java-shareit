@@ -13,7 +13,6 @@ import ru.practicum.shareit.request.service.RequestService;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -45,6 +44,7 @@ class RequestControllerTest {
         verify(requestService).addRequest(userId, requestDto);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Test
     void testSuccessGetRequestsByUser() {
         Long userId = 1L;
@@ -63,6 +63,7 @@ class RequestControllerTest {
         verify(requestService).getRequestsByUser(userId);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Test
     void testSuccessGetRequestsByUser_shouldReturnEmptyList() {
         Long userId = 1L;
@@ -74,6 +75,7 @@ class RequestControllerTest {
         verify(requestService).getRequestsByUser(userId);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Test
     void testSuccessGetAllAvailableRequests() {
         Long userId = 1L;

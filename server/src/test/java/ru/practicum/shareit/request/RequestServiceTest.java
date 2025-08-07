@@ -1,13 +1,10 @@
 package ru.practicum.shareit.request;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -29,7 +26,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -48,12 +46,6 @@ class RequestServiceTest {
     private RequestMapper requestMapper;
     @InjectMocks
     private RequestServiceImpl requestService;
-
-
-    private final User requestor = new User(2L, "User2", "user2@yandex.ru");
-    private final User user = new User(1L, "User", "user@yandex.ru");
-    private final ItemRequest request = new ItemRequest(1L, "Description", requestor, Instant.now());
-    private final Item item = new Item(1L, "item", "Description", true, user, request);
 
     @Test
     void testSuccessAddRequest() {
@@ -139,7 +131,7 @@ class RequestServiceTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         Assertions.assertNotNull(response.getBody());
-        assertThat(response.getBody().get(0).getRequestorId()).isEqualTo(2L);
+        assertThat(response.getBody().getFirst().getRequestorId()).isEqualTo(2L);
     }
 
     @Test
@@ -162,7 +154,7 @@ class RequestServiceTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         Assertions.assertNotNull(response.getBody());
-        assertThat(response.getBody().getItems().get(0).getName()).isEqualTo("Item");
+        assertThat(response.getBody().getItems().getFirst().getName()).isEqualTo("Item");
     }
 
     @Test

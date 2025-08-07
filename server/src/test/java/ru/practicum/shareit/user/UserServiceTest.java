@@ -1,4 +1,4 @@
-package user;
+package ru.practicum.shareit.user;
 
 import org.assertj.core.api.AssertionsForInterfaceTypes;
 import org.junit.jupiter.api.Assertions;
@@ -13,9 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatusCode;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.user.UserMapper;
-import ru.practicum.shareit.user.UserRepository;
-import ru.practicum.shareit.user.UserServiceImpl;
 import ru.practicum.shareit.user.dto.ChangeUserDto;
 import ru.practicum.shareit.user.model.User;
 
@@ -38,8 +35,8 @@ class UserServiceTest {
     private UserMapper userMapper = Mappers.getMapper(UserMapper.class);
 
     private final Long id = 1L;
-    private final ChangeUserDto userDto = new ChangeUserDto(id, "user@yandex.ru", "User");
-    private final User user = new User(id, "User", "user@yandex.ru");
+    private final ChangeUserDto userDto = new ChangeUserDto(id, "ru.practicum.shareit.user@yandex.ru", "User");
+    private final User user = new User(id, "User", "ru.practicum.shareit.user@yandex.ru");
 
     @Test
     void testSuccessGetAllUsers() {
@@ -63,7 +60,7 @@ class UserServiceTest {
         assertThat(actualUser.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
         var body = actualUser.getBody();
         assertThat(body.getId()).isEqualTo(1);
-        AssertionsForInterfaceTypes.assertThat(body.getEmail()).isEqualTo("user@yandex.ru");
+        AssertionsForInterfaceTypes.assertThat(body.getEmail()).isEqualTo("ru.practicum.shareit.user@yandex.ru");
         AssertionsForInterfaceTypes.assertThat(body).isNotNull();
     }
 
@@ -84,7 +81,7 @@ class UserServiceTest {
         assertThat(actualUser.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(201));
         var body = actualUser.getBody();
         assertThat(body.getId()).isEqualTo(1);
-        AssertionsForInterfaceTypes.assertThat(body.getEmail()).isEqualTo("user@yandex.ru");
+        AssertionsForInterfaceTypes.assertThat(body.getEmail()).isEqualTo("ru.practicum.shareit.user@yandex.ru");
         AssertionsForInterfaceTypes.assertThat(body).isNotNull();
     }
 
@@ -105,7 +102,7 @@ class UserServiceTest {
         assertThat(actualUser.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
         var body = actualUser.getBody();
         assertThat(body.getId()).isEqualTo(1);
-        AssertionsForInterfaceTypes.assertThat(body.getEmail()).isEqualTo("user@yandex.ru");
+        AssertionsForInterfaceTypes.assertThat(body.getEmail()).isEqualTo("ru.practicum.shareit.user@yandex.ru");
         AssertionsForInterfaceTypes.assertThat(body).isNotNull();
         verify(userRepository, times(1))
                 .findById(user.getId());

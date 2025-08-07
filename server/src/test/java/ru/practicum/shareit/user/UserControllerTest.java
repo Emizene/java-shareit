@@ -1,4 +1,4 @@
-package user;
+package ru.practicum.shareit.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -6,12 +6,9 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.shareit.user.UserController;
-import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.dto.ChangeUserDto;
 import ru.practicum.shareit.user.dto.UserResponseDto;
 import ru.practicum.shareit.user.dto.UserTestDto;
@@ -37,8 +34,8 @@ class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private final UserResponseDto changeUserDto = new UserResponseDto(1L, "user@yandex.ru", "User");
-    private final User user = new User(1L, "User", "user@yandex.ru");
+    private final UserResponseDto changeUserDto = new UserResponseDto(1L, "ru.practicum.shareit.user@yandex.ru", "User");
+    private final User user = new User(1L, "User", "ru.practicum.shareit.user@yandex.ru");
 
     @Test
     void testSuccessCreateUser() throws Exception {
@@ -51,7 +48,7 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("User"))
-                .andExpect(jsonPath("$.email").value("user@yandex.ru"));
+                .andExpect(jsonPath("$.email").value("ru.practicum.shareit.user@yandex.ru"));
 
         verify(userService, times(1)).createUser(any(ChangeUserDto.class));
     }
@@ -84,7 +81,7 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("User"))
-                .andExpect(jsonPath("$.email").value("user@yandex.ru"));
+                .andExpect(jsonPath("$.email").value("ru.practicum.shareit.user@yandex.ru"));
 
         verify(userService, times(1)).getUserById(1L);
     }

@@ -1,4 +1,4 @@
-package booking;
+package ru.practicum.shareit.booking;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -8,10 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import ru.practicum.shareit.booking.BookingController;
-import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
-import ru.practicum.shareit.booking.dto.BookingTestDto;
 import ru.practicum.shareit.booking.dto.ChangeBookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
 

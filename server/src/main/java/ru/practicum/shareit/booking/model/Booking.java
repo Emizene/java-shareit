@@ -38,6 +38,7 @@ public class Booking {
     @JoinColumn(name = "booker_id")
     private User booker;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private Status status = Status.WAITING;
 }

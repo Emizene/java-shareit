@@ -44,7 +44,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public ResponseEntity<ItemResponseDto> createItem(ChangeItemDto item, Long userId) {
-        log.debug("Добавление новой вещи: item={}", item.getName());
+        log.debug("Добавление новой вещи: ru.practicum.shareit.item={}", item.getName());
 
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));

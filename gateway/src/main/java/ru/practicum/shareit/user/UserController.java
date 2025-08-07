@@ -18,25 +18,25 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<Object> createUser(@Valid @RequestBody ChangeUserDto user) {
-        log.info("Create user {}", user);
+        log.info("Create ru.practicum.shareit.user {}", user);
         return userClient.createUser(user);
     }
 
     @PatchMapping("/{userId}")
     public ResponseEntity<Object> updateUser(@PathVariable Long userId, @Valid @RequestBody ChangeUserDto user) {
-        log.info("Update user {}", user);
+        log.info("Update ru.practicum.shareit.user {}", user);
         return userClient.updateUser(userId, user);
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<Object> getUserById(@PathVariable Long userId) {
-        log.info("Get user with id={}", userId);
+        log.info("Get ru.practicum.shareit.user with id={}", userId);
         return userClient.getUserById(userId);
     }
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<Object> deleteUserById(@PathVariable Long userId) {
-        log.info("Delete user with id={}", userId);
+        log.info("Delete ru.practicum.shareit.user with id={}", userId);
         return userClient.deleteUserById(userId);
     }
 }

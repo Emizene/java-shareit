@@ -29,14 +29,14 @@ public class BookingController {
                                               @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         BookingState state = BookingState.from(stateParam)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown state: " + stateParam));
-        log.info("Get booking with state {}, userId={}, from={}, size={}", stateParam, userId, from, size);
+        log.info("Get ru.practicum.shareit.booking with state {}, userId={}, from={}, size={}", stateParam, userId, from, size);
         return bookingClient.getBookings(userId, state, from, size);
     }
 
     @PostMapping
     public ResponseEntity<Object> bookItem(@RequestHeader(SharedHeaders.USER_ID_HEADER) Long userId,
                                            @RequestBody @Valid BookItemRequestDto requestDto) {
-        log.info("Creating booking {}, userId={}", requestDto, userId);
+        log.info("Creating ru.practicum.shareit.booking {}, userId={}", requestDto, userId);
         return bookingClient.bookItem(userId, requestDto);
     }
 
@@ -45,7 +45,7 @@ public class BookingController {
             @RequestHeader(SharedHeaders.USER_ID_HEADER) Long userId,
             @PathVariable Long bookingId,
             @RequestParam boolean approved) {
-        log.info("Managing booking {} for user {}, approved: {}", bookingId, userId, approved);
+        log.info("Managing ru.practicum.shareit.booking {} for ru.practicum.shareit.user {}, approved: {}", bookingId, userId, approved);
         return bookingClient.manageBooking(userId, bookingId, approved);
     }
 
@@ -62,7 +62,7 @@ public class BookingController {
     @GetMapping("/{bookingId}")
     public ResponseEntity<Object> getBooking(@RequestHeader(SharedHeaders.USER_ID_HEADER) Long userId,
                                              @PathVariable Long bookingId) {
-        log.info("Get booking {}, userId={}", bookingId, userId);
+        log.info("Get ru.practicum.shareit.booking {}, userId={}", bookingId, userId);
         return bookingClient.getBooking(userId, bookingId);
     }
 }

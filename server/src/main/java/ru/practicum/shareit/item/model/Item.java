@@ -10,7 +10,6 @@ import ru.practicum.shareit.item.comment.model.Comment;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.Objects;
 import java.util.Set;
 
 @Getter

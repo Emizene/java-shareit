@@ -32,13 +32,12 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class ItemServiceTest {
@@ -421,7 +420,8 @@ class ItemServiceTest {
     @Test
     void deleteItemById_whenRepositoryThrowsException_shouldPropagateException() {
         when(itemRepository.findById(ID)).thenReturn(Optional.of(item));
-        doThrow(new DataAccessException("Database error") {}).when(itemRepository).delete(item);
+        doThrow(new DataAccessException("Database error") {
+        }).when(itemRepository).delete(item);
 
         assertThrows(DataAccessException.class, () -> itemService.deleteItemById(ID));
     }

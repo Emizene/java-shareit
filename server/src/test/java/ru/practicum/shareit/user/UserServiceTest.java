@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -35,8 +36,8 @@ class UserServiceTest {
     private UserMapper userMapper = Mappers.getMapper(UserMapper.class);
 
     private final Long id = 1L;
-    private final ChangeUserDto userDto = new ChangeUserDto(id, "ru.practicum.shareit.user@yandex.ru", "User");
-    private final User user = new User(id, "User", "ru.practicum.shareit.user@yandex.ru");
+    private final ChangeUserDto userDto = new ChangeUserDto(id, "user@yandex.ru", "User");
+    private final User user = new User(id, "User", "user@yandex.ru");
 
     @Test
     void testSuccessGetAllUsers() {
@@ -60,7 +61,7 @@ class UserServiceTest {
         assertThat(actualUser.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
         var body = actualUser.getBody();
         assertThat(body.getId()).isEqualTo(1);
-        AssertionsForInterfaceTypes.assertThat(body.getEmail()).isEqualTo("ru.practicum.shareit.user@yandex.ru");
+        AssertionsForInterfaceTypes.assertThat(body.getEmail()).isEqualTo("user@yandex.ru");
         AssertionsForInterfaceTypes.assertThat(body).isNotNull();
     }
 
@@ -68,7 +69,7 @@ class UserServiceTest {
     void testGetUserById_whenUserNotFound_thenExceptionThrown() {
         when((userRepository).findById(anyLong())).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(NotFoundException.class, () -> userService.getUserById(2L));
+        assertThrows(NotFoundException.class, () -> userService.getUserById(2L));
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -81,7 +82,7 @@ class UserServiceTest {
         assertThat(actualUser.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(201));
         var body = actualUser.getBody();
         assertThat(body.getId()).isEqualTo(1);
-        AssertionsForInterfaceTypes.assertThat(body.getEmail()).isEqualTo("ru.practicum.shareit.user@yandex.ru");
+        AssertionsForInterfaceTypes.assertThat(body.getEmail()).isEqualTo("user@yandex.ru");
         AssertionsForInterfaceTypes.assertThat(body).isNotNull();
     }
 
@@ -89,7 +90,7 @@ class UserServiceTest {
     void testCreateUser_whenUserEmailDuplicate_thenNotSavedUser() {
         doThrow(DataIntegrityViolationException.class).when(userRepository).save(any(User.class));
 
-        Assertions.assertThrows(DataIntegrityViolationException.class, () -> userService.createUser(userDto));
+        assertThrows(DataIntegrityViolationException.class, () -> userService.createUser(userDto));
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -102,7 +103,7 @@ class UserServiceTest {
         assertThat(actualUser.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
         var body = actualUser.getBody();
         assertThat(body.getId()).isEqualTo(1);
-        AssertionsForInterfaceTypes.assertThat(body.getEmail()).isEqualTo("ru.practicum.shareit.user@yandex.ru");
+        AssertionsForInterfaceTypes.assertThat(body.getEmail()).isEqualTo("user@yandex.ru");
         AssertionsForInterfaceTypes.assertThat(body).isNotNull();
         verify(userRepository, times(1))
                 .findById(user.getId());

@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -73,6 +72,17 @@ class BookingServiceTest {
     private final User booker = new User(2L, "Booker", "booker@email.com");
     private final Item availableItem = new Item(ID, "Item", "Description", true, owner, null);
     private final Item unavailableItem = new Item(ID, "Item", "Description", false, owner, null);
+    private final Booking booking = Booking.builder()
+            .id(ID)
+            .booker(owner)
+            .item(availableItem)
+            .status(Status.APPROVED)
+            .build();
+
+    private final List<Booking> testBookings = List.of(
+            Booking.builder().id(1L).booker(getCorrectUser()).build(),
+            Booking.builder().id(2L).booker(getCorrectUser()).build()
+    );
 
     @SuppressWarnings("ConstantConditions")
     @Test
@@ -192,7 +202,7 @@ class BookingServiceTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    void updateBooking_whenApprovedTrue_shouldUpdateStatusToApproved() {
+    void testUpdateBooking_whenApprovedTrue_shouldUpdateStatusToApproved() {
         Booking booking = Booking.builder()
                 .id(ID)
                 .status(Status.WAITING)
@@ -213,7 +223,7 @@ class BookingServiceTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    void updateBooking_whenApprovedFalse_shouldUpdateStatusToRejected() {
+    void testUpdateBooking_whenApprovedFalse_shouldUpdateStatusToRejected() {
         Booking booking = Booking.builder()
                 .id(ID)
                 .status(Status.WAITING)
@@ -231,7 +241,7 @@ class BookingServiceTest {
     }
 
     @Test
-    void updateBooking_whenBookingNotFound_shouldThrowNotFoundException() {
+    void testUpdateBooking_whenBookingNotFound_shouldThrowNotFoundException() {
         when(bookingRepository.findById(ID)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () ->
@@ -240,7 +250,7 @@ class BookingServiceTest {
     }
 
     @Test
-    void updateBooking_whenUserNotOwner_shouldThrowAccessDeniedException() {
+    void testUpdateBooking_whenUserNotOwner_shouldThrowAccessDeniedException() {
         Booking booking = Booking.builder()
                 .id(ID)
                 .status(Status.WAITING)
@@ -257,7 +267,7 @@ class BookingServiceTest {
 
     @SuppressWarnings("ConstantConditions")
     @Test
-    void updateBooking_whenStatusNotWaiting_shouldKeepOriginalStatus() {
+    void testUpdateBooking_whenStatusNotWaiting_shouldKeepOriginalStatus() {
         Booking booking = Booking.builder()
                 .id(ID)
                 .status(Status.APPROVED)
@@ -303,6 +313,73 @@ class BookingServiceTest {
         assertThat(body).isNotNull();
         assertThat(body.getId()).isEqualTo(bookingId);
         assertThat(body.getStatus()).isEqualTo(Status.APPROVED);
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test
+    void getBookingById_whenUserIsAuthor_shouldReturnBooking() {
+        when(bookingRepository.findById(ID)).thenReturn(Optional.of(booking));
+
+        ResponseEntity<BookingResponseDto> response =
+                bookingService.getBookingById(ID, ID);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getId()).isEqualTo(ID);
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Test
+    void getBookingById_whenUserIsOwner_shouldReturnBooking() {
+        when(bookingRepository.findById(ID)).thenReturn(Optional.of(booking));
+
+        ResponseEntity<BookingResponseDto> response =
+                bookingService.getBookingById(ID, ID);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getId()).isEqualTo(ID);
+    }
+
+    @Test
+    void getBookingById_whenUserNotAuthorNorOwner_shouldThrowAccessDenied() {
+        when(bookingRepository.findById(ID)).thenReturn(Optional.of(booking));
+
+        assertThatThrownBy(() -> bookingService.getBookingById(ID, ID2))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("Доступ запрещен");
+    }
+
+    @Test
+    void getBookingById_whenBookingNotFound_shouldThrowNotFoundException() {
+        when(bookingRepository.findById(ID)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> bookingService.getBookingById(ID, ID))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Бронь с ID " + ID);
+    }
+
+    @Test
+    void getBookingById_whenUserIsAuthor_shouldHaveIsAuthorTrue() {
+        when(bookingRepository.findById(ID)).thenReturn(Optional.of(booking));
+
+        bookingService.getBookingById(ID, ID);
+    }
+
+    @Test
+    void getBookingById_whenUserIsOwner_shouldHaveIsOwnerTrue() {
+        when(bookingRepository.findById(ID)).thenReturn(Optional.of(booking));
+
+        bookingService.getBookingById(ID, ID);
+    }
+
+    @Test
+    void getBookingById_whenUserIsNeither_shouldHaveCorrectBooleanValues() {
+        when(bookingRepository.findById(ID)).thenReturn(Optional.of(booking));
+
+        assertThatThrownBy(() -> bookingService.getBookingById(ID, ID2))
+                .isInstanceOfSatisfying(AccessDeniedException.class, e -> {
+                });
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -369,6 +446,214 @@ class BookingServiceTest {
         assertThat(body).hasSize(1);
         assertThat(body.getFirst().getId()).isEqualTo(1L);
         assertThat(body.getFirst().getStatus()).isEqualTo(Status.ALL);
+    }
+
+    @Test
+    void testGetAllUserBookings_whenStateAll_shouldReturnAllBookings() {
+        when(userRepository.findById(ID)).thenReturn(Optional.of(getCorrectUser()));
+        when(bookingRepository.findByBookerIdOrderByStartDesc(ID)).thenReturn(testBookings);
+
+        ResponseEntity<List<BookingResponseDto>> response =
+                bookingService.getAllUserBookings(ID, "ALL");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+    }
+
+    @Test
+    void testGetAllUserBookings_whenStateCurrent_shouldReturnCurrentBookings() {
+        when(userRepository.findById(ID)).thenReturn(Optional.of(getCorrectUser()));
+        when(bookingRepository.findByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(
+                eq(ID), any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(testBookings);
+
+        ResponseEntity<List<BookingResponseDto>> response =
+                bookingService.getAllUserBookings(ID, "CURRENT");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+    }
+
+    @Test
+    void testGetAllUserBookings_whenStatePast_shouldReturnPastBookings() {
+        when(userRepository.findById(ID)).thenReturn(Optional.of(getCorrectUser()));
+        when(bookingRepository.findByBookerIdAndEndBeforeOrderByStartDesc(
+                eq(ID), any(LocalDateTime.class)))
+                .thenReturn(testBookings);
+
+        ResponseEntity<List<BookingResponseDto>> response =
+                bookingService.getAllUserBookings(ID, "PAST");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+    }
+
+    @Test
+    void testGetAllUserBookings_whenStateFuture_shouldReturnFutureBookings() {
+        when(userRepository.findById(ID)).thenReturn(Optional.of(getCorrectUser()));
+        when(bookingRepository.findByBookerIdAndStartAfterOrderByStartDesc(
+                eq(ID), any(LocalDateTime.class)))
+                .thenReturn(testBookings);
+
+        ResponseEntity<List<BookingResponseDto>> response =
+                bookingService.getAllUserBookings(ID, "FUTURE");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+    }
+
+    @Test
+    void testGetAllUserBookings_whenStateWaiting_shouldReturnWaitingBookings() {
+        when(userRepository.findById(ID)).thenReturn(Optional.of(getCorrectUser()));
+        when(bookingRepository.findByBookerIdAndStatusOrderByStartDesc(
+                ID, Status.WAITING)).thenReturn(testBookings);
+
+        ResponseEntity<List<BookingResponseDto>> response =
+                bookingService.getAllUserBookings(ID, "WAITING");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+    }
+
+    @Test
+    void testGetAllUserBookings_whenStateRejected_shouldReturnRejectedBookings() {
+        when(userRepository.findById(ID)).thenReturn(Optional.of(getCorrectUser()));
+        when(bookingRepository.findByBookerIdAndStatusOrderByStartDesc(
+                ID, Status.REJECTED)).thenReturn(testBookings);
+
+        ResponseEntity<List<BookingResponseDto>> response =
+                bookingService.getAllUserBookings(ID, "REJECTED");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+    }
+
+    @Test
+    void testGetAllUserBookings_whenInvalidState_shouldThrowInternalServerError() {
+        when(userRepository.findById(ID)).thenReturn(Optional.of(getCorrectUser()));
+
+        assertThrows(InternalServerErrorException.class, () ->
+                bookingService.getAllUserBookings(ID, "INVALID"));
+    }
+
+    @Test
+    void testGetAllUserBookings_whenUserNotFound_shouldThrowNotFoundException() {
+        when(userRepository.findById(ID)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () ->
+                bookingService.getAllUserBookings(ID, "ALL"));
+    }
+
+    @Test
+    void testGetAllOwnerBookings_whenStateAll_shouldReturnAllBookings() {
+        when(userRepository.findById(ID)).thenReturn(Optional.of(owner));
+        when(itemRepository.existsByOwnerId(ID)).thenReturn(true);
+        when(bookingRepository.findByItemOwnerIdOrderByStartDesc(ID)).thenReturn(testBookings);
+
+        ResponseEntity<List<BookingResponseDto>> response =
+                bookingService.getAllOwnerBookings(ID, "ALL");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+    }
+
+    @Test
+    void testGetAllOwnerBookings_whenStateCurrent_shouldReturnCurrentBookings() {
+        when(userRepository.findById(ID)).thenReturn(Optional.of(owner));
+        when(itemRepository.existsByOwnerId(ID)).thenReturn(true);
+        when(bookingRepository.findByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(
+                eq(ID), any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(testBookings);
+
+        ResponseEntity<List<BookingResponseDto>> response =
+                bookingService.getAllOwnerBookings(ID, "CURRENT");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+    }
+
+    @Test
+    void testGetAllOwnerBookings_whenStatePast_shouldReturnPastBookings() {
+        when(userRepository.findById(ID)).thenReturn(Optional.of(owner));
+        when(itemRepository.existsByOwnerId(ID)).thenReturn(true);
+        when(bookingRepository.findByItemOwnerIdAndEndBeforeOrderByStartDesc(
+                eq(ID), any(LocalDateTime.class)))
+                .thenReturn(testBookings);
+
+        ResponseEntity<List<BookingResponseDto>> response =
+                bookingService.getAllOwnerBookings(ID, "PAST");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+    }
+
+    @Test
+    void testGetAllOwnerBookings_whenStateFuture_shouldReturnFutureBookings() {
+        when(userRepository.findById(ID)).thenReturn(Optional.of(owner));
+        when(itemRepository.existsByOwnerId(ID)).thenReturn(true);
+        when(bookingRepository.findByItemOwnerIdAndStartAfterOrderByStartDesc(
+                eq(ID), any(LocalDateTime.class)))
+                .thenReturn(testBookings);
+
+        ResponseEntity<List<BookingResponseDto>> response =
+                bookingService.getAllOwnerBookings(ID, "FUTURE");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+    }
+
+    @Test
+    void testGetAllOwnerBookings_whenStateWaiting_shouldReturnWaitingBookings() {
+        when(userRepository.findById(ID)).thenReturn(Optional.of(owner));
+        when(itemRepository.existsByOwnerId(ID)).thenReturn(true);
+        when(bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(
+                ID, Status.WAITING)).thenReturn(testBookings);
+
+        ResponseEntity<List<BookingResponseDto>> response =
+                bookingService.getAllOwnerBookings(ID, "WAITING");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+    }
+
+    @Test
+    void testGetAllOwnerBookings_whenStateRejected_shouldReturnRejectedBookings() {
+        when(userRepository.findById(ID)).thenReturn(Optional.of(owner));
+        when(itemRepository.existsByOwnerId(ID)).thenReturn(true);
+        when(bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(
+                ID, Status.REJECTED)).thenReturn(testBookings);
+
+        ResponseEntity<List<BookingResponseDto>> response =
+                bookingService.getAllOwnerBookings(ID, "REJECTED");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).hasSize(2);
+    }
+
+    @Test
+    void testGetAllOwnerBookings_whenInvalidState_shouldThrowInternalServerError() {
+        when(userRepository.findById(ID)).thenReturn(Optional.of(owner));
+        when(itemRepository.existsByOwnerId(ID)).thenReturn(true);
+
+        assertThrows(InternalServerErrorException.class, () ->
+                bookingService.getAllOwnerBookings(ID, "INVALID"));
+    }
+
+    @Test
+    void testGetAllOwnerBookings_whenUserNotFound_shouldThrowNotFoundException() {
+        when(userRepository.findById(ID)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () ->
+                bookingService.getAllOwnerBookings(ID, "ALL"));
+    }
+
+    @Test
+    void testGetAllOwnerBookings_whenNotOwner_shouldThrowAccessDeniedException() {
+        when(userRepository.findById(ID)).thenReturn(Optional.of(owner));
+        when(itemRepository.existsByOwnerId(ID)).thenReturn(false);
+
+        assertThrows(AccessDeniedException.class, () ->
+                bookingService.getAllOwnerBookings(ID, "ALL"));
     }
 
     private static Booking getCorrectBookingWithStatusAll() {

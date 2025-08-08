@@ -18,6 +18,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Valid
 @NoArgsConstructor
+@EqualsAndHashCode
 @Builder
 @Entity
 @Table(name = "items")
@@ -49,19 +50,6 @@ public class Item {
 
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Comment> comments;
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Item item = (Item) o;
-        return Objects.equals(id, item.id);
-    }
 
     public Item(Long id, String name, String description, Boolean available, User owner, ItemRequest request) {
         this.id = id;

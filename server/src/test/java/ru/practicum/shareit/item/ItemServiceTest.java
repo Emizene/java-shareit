@@ -3,9 +3,11 @@ package ru.practicum.shareit.item;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import ru.practicum.shareit.booking.BookingMapper;
@@ -27,13 +29,16 @@ import ru.practicum.shareit.user.model.User;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class ItemServiceTest {
@@ -61,6 +66,11 @@ class ItemServiceTest {
     private final User notOwner = new User(2L, "User2", "user2@yandex.ru");
     private final ChangeItemDto changeItemDto = new ChangeItemDto(ID, "Item", "Description", true, null);
     private final Item item = new Item(ID, "Item", "Description", true, user, null);
+    private final String searchText = "test";
+    private final List<Item> testItems = List.of(
+            new Item(1L, "Test Item 1", "Description 1", true, user, null),
+            new Item(2L, "Test Item 2", "Description 2", true, user, null)
+    );
 
     @Test
     void testSuccessCreateItem_whenUserFound_thenSavedItem() {
@@ -143,6 +153,71 @@ class ItemServiceTest {
         assertThrows(AccessDeniedException.class, () ->
                 itemService.updateItem(ID, changeItemDto, otherUser)
         );
+    }
+
+    @Test
+    void updateItem_whenItemNotFound_shouldThrowNotFoundExceptionAndLogError() {
+        when(userRepository.findUserById(ID)).thenReturn(Optional.of(new User()));
+
+        when(itemRepository.findByIdAndOwnerId(ID, ID)).thenReturn(Optional.of(new Item()));
+
+        when(itemRepository.findById(ID)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () ->
+                itemService.updateItem(ID, new ChangeItemDto(), ID));
+
+        verify(itemRepository, never()).save(any());
+
+        Throwable thrown = catchThrowable(() ->
+                itemService.updateItem(ID, new ChangeItemDto(), ID));
+        assertThat(thrown)
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Вещь с id");
+    }
+
+    @Test
+    void updateItem_whenUpdatingAvailability_shouldUpdateAndLogChange() {
+        boolean newAvailability = !item.getAvailable();
+        ChangeItemDto updateDto = new ChangeItemDto();
+        updateDto.setAvailable(newAvailability);
+
+        when(userRepository.findUserById(ID)).thenReturn(Optional.of(user));
+        when(itemRepository.findByIdAndOwnerId(ID, ID)).thenReturn(Optional.of(item));
+        when(itemRepository.findById(ID)).thenReturn(Optional.of(item));
+        when(itemRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ResponseEntity<ItemResponseDto> response = itemService.updateItem(ID, updateDto, ID);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
+        verify(itemRepository).save(itemCaptor.capture());
+
+        Item savedItem = itemCaptor.getValue();
+        assertThat(savedItem.getAvailable()).isEqualTo(newAvailability);
+        assertThat(savedItem.getName()).isEqualTo(item.getName());
+        assertThat(savedItem.getDescription()).isEqualTo(item.getDescription());
+    }
+
+    @Test
+    void updateItem_whenAvailabilityNotChanged_shouldNotUpdate() {
+        ChangeItemDto updateDto = new ChangeItemDto();
+        updateDto.setAvailable(item.getAvailable());
+
+        when(userRepository.findUserById(ID)).thenReturn(Optional.of(user));
+        when(itemRepository.findByIdAndOwnerId(ID, ID)).thenReturn(Optional.of(item));
+        when(itemRepository.findById(ID)).thenReturn(Optional.of(item));
+        when(itemRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ResponseEntity<ItemResponseDto> response = itemService.updateItem(ID, updateDto, ID);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
+        verify(itemRepository).save(itemCaptor.capture());
+
+        Item savedItem = itemCaptor.getValue();
+        assertThat(savedItem.getAvailable()).isEqualTo(item.getAvailable());
     }
 
     @Test
@@ -266,5 +341,88 @@ class ItemServiceTest {
                 any(LocalDateTime.class));
         verify(commentRepository, never()).save(any());
         verify(commentMapper, never()).toEntity(any(), any(), any());
+    }
+
+    @Test
+    void testSearchItem_whenTextIsBlank_shouldReturnEmptyList() {
+        ResponseEntity<List<ItemResponseDto>> response = itemService.searchItem(" ");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEmpty();
+        verify(itemRepository, never()).findByNameContainingIgnoreCaseAndAvailableIsTrueOrDescriptionContainingIgnoreCaseAndAvailableIsTrue(
+                anyString(), anyString());
+    }
+
+    @Test
+    void testSearchItem_whenTextIsNull_shouldReturnEmptyList() {
+        ResponseEntity<List<ItemResponseDto>> response = itemService.searchItem(null);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEmpty();
+        verify(itemRepository, never()).findByNameContainingIgnoreCaseAndAvailableIsTrueOrDescriptionContainingIgnoreCaseAndAvailableIsTrue(
+                anyString(), anyString());
+    }
+
+    @Test
+    void testSearchItem_whenNoItemsFound_shouldReturnEmptyList() {
+        when(itemRepository.findByNameContainingIgnoreCaseAndAvailableIsTrueOrDescriptionContainingIgnoreCaseAndAvailableIsTrue(
+                searchText, searchText)).thenReturn(Collections.emptyList());
+
+        ResponseEntity<List<ItemResponseDto>> response = itemService.searchItem(searchText);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEmpty();
+    }
+
+    @Test
+    void searchItem_shouldCallMapperWithCorrectItems() {
+        List<ItemResponseDto> expectedDto = List.of(
+                new ItemResponseDto(1L, "Item1", "Desc1", true, null, null),
+                new ItemResponseDto(2L, "Item2", "Desc2", true, null, null)
+        );
+
+        when(itemRepository.findByNameContainingIgnoreCaseAndAvailableIsTrueOrDescriptionContainingIgnoreCaseAndAvailableIsTrue(
+                searchText, searchText))
+                .thenReturn(testItems);
+
+        when(itemMapper.toItemDtoList(testItems)).thenReturn(expectedDto);
+
+        ResponseEntity<List<ItemResponseDto>> response = itemService.searchItem(searchText);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody())
+                .isEqualTo(expectedDto)
+                .hasSize(2);
+
+        verify(itemMapper).toItemDtoList(testItems);
+        verify(itemRepository).findByNameContainingIgnoreCaseAndAvailableIsTrueOrDescriptionContainingIgnoreCaseAndAvailableIsTrue(
+                searchText, searchText);
+    }
+
+    @Test
+    void deleteItemById_whenItemExists_shouldDeleteItem() {
+        when(itemRepository.findById(ID)).thenReturn(Optional.of(item));
+        doNothing().when(itemRepository).delete(item);
+
+        ResponseEntity<Void> response = itemService.deleteItemById(ID);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(itemRepository).delete(item);
+    }
+
+    @Test
+    void deleteItemById_whenItemNotExists_shouldThrowNotFoundException() {
+        when(itemRepository.findById(ID)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> itemService.deleteItemById(ID));
+        verify(itemRepository, never()).delete(any());
+    }
+
+    @Test
+    void deleteItemById_whenRepositoryThrowsException_shouldPropagateException() {
+        when(itemRepository.findById(ID)).thenReturn(Optional.of(item));
+        doThrow(new DataAccessException("Database error") {}).when(itemRepository).delete(item);
+
+        assertThrows(DataAccessException.class, () -> itemService.deleteItemById(ID));
     }
 }

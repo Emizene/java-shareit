@@ -108,7 +108,7 @@ public class ItemServiceImpl implements ItemService {
 
         log.info("Найдена вещь: ID={}", itemId);
 
-        return ResponseEntity.ok(itemMapper.toDtoWithBookings(item));
+        return ResponseEntity.ok(itemMapper.toDtoWithBookings(item, commentRepository.getAllByItemId(itemId)));
     }
 
     @Override

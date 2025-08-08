@@ -63,6 +63,19 @@ public class ItemMapper {
                 .build();
     }
 
+    public ItemDtoWithBookings toDtoWithBookings(Item item, Set<Comment> comments) {
+        return ItemDtoWithBookings.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.getAvailable())
+                .nextBooking(mapNextBooking(item))
+                .lastBooking(mapLastBooking(item))
+                .comments(mapComments(comments))
+                .ownerName(item.getOwner() != null ? item.getOwner().getName() : null)
+                .build();
+    }
+
     public ItemDtoSimple toItemDtoSimple(Item item) {
         return ItemDtoSimple.builder()
                 .id(item.getId())

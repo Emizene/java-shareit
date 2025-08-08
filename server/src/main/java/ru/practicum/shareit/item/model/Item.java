@@ -12,6 +12,7 @@ import ru.practicum.shareit.user.model.User;
 
 import java.util.Set;
 
+@ToString
 @Getter
 @Setter
 @AllArgsConstructor

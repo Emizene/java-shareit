@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.ItemMapper;
+import ru.practicum.shareit.item.ItemMapperTest;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemDtoSimple;
 import ru.practicum.shareit.item.model.Item;
@@ -41,7 +41,7 @@ class RequestServiceTest {
     @Mock
     private ItemRepository itemRepository;
     @Mock
-    private ItemMapper itemMapper;
+    private ItemMapperTest itemMapper;
     @Mock
     private RequestMapper requestMapper;
     @InjectMocks

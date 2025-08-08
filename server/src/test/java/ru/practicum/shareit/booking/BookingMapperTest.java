@@ -35,23 +35,6 @@ class BookingMapperTest {
     private final LocalDateTime now = LocalDateTime.now();
     private final User booker = new User(1L, "Booker", "booker@yandex.ru");
     private final Item item = new Item(1L, "Item", "Description", true, new User(2L, "Owner", "owner@yandex.ru"), null);
-//    private final ItemDtoSimple simpleItem = new ItemDtoSimple(1L, "Name");
-//    private final UserDtoSimple simpleUser = new UserDtoSimple(1L);
-//
-//    @Test
-//    void testToEntity_shouldMapChangeBookingDtoToEntity() {
-//        ChangeBookingDto dto = new ChangeBookingDto(1L, now.plusDays(1), now.plusDays(2), simpleItem, simpleUser, Status.WAITING);
-//
-//        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
-//
-//        Booking booking = bookingMapper.toEntity(dto);
-//
-//        assertThat(booking)
-//                .hasFieldOrPropertyWithValue("start", dto.getStart())
-//                .hasFieldOrPropertyWithValue("end", dto.getEnd())
-//                .hasFieldOrPropertyWithValue("item.id", 1L)
-//                .hasFieldOrPropertyWithValue("status", Status.WAITING);
-//    }
 
     @Test
     void testToBookingDto_shouldMapEntityToResponseDto() {

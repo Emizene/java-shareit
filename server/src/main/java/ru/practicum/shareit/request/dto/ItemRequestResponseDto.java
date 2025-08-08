@@ -19,11 +19,4 @@ public class ItemRequestResponseDto {
     private Instant created;
     private Long requestorId;
     private List<ItemDtoSimple> items;
-
-    public ItemRequestResponseDto(Long id, String description, Instant created, Long requestorId) {
-        this.id = id;
-        this.description = description;
-        this.created = created;
-        this.requestorId = requestorId;
-    }
 }

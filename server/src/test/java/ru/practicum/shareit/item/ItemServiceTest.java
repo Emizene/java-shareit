@@ -32,6 +32,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
@@ -226,7 +227,7 @@ class ItemServiceTest {
         ItemDtoWithBookings expectedDto = new ItemDtoWithBookings(itemId, "Item", "Description", true, "User");
 
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
-        when(itemMapper.toDtoWithBookings(item)).thenReturn(expectedDto);
+        when(itemMapper.toDtoWithBookingsAndComments(item, Set.of())).thenReturn(expectedDto);
 
         ResponseEntity<ItemDtoWithBookings> response = itemService.getItemById(itemId);
         ItemDtoWithBookings actualItemDto = response.getBody();
@@ -246,7 +247,7 @@ class ItemServiceTest {
                 );
 
         verify(itemRepository).findById(itemId);
-        verify(itemMapper).toDtoWithBookings(item);
+        verify(itemMapper).toDtoWithBookingsAndComments(item, Set.of());
     }
 
     @Test

@@ -96,7 +96,7 @@ class ItemMapperTest {
     }
 
     @Test
-    void toDtoWithBookings_shouldMapItemToDtoWithBookings() {
+    void toDtoWithBookings_shouldMapItemToDtoWithBookingsAndComments() {
         Booking nextBooking = Booking.builder()
                 .id(1L)
                 .start(now.plusDays(1))
@@ -124,7 +124,7 @@ class ItemMapperTest {
 
         when(commentMapper.toCommentDto(any())).thenReturn(new CommentResponseDto());
 
-        ItemDtoWithBookings dto = itemMapper.toDtoWithBookings(item);
+        ItemDtoWithBookings dto = itemMapper.toDtoWithBookingsAndComments(item);
 
         assertThat(dto)
                 .hasFieldOrPropertyWithValue("id", 1L)

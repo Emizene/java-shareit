@@ -50,7 +50,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public ItemDtoWithBookings toDtoWithBookings(Item item) {
+    public ItemDtoWithBookings toDtoWithBookingsAndComments(Item item) {
         return ItemDtoWithBookings.builder()
                 .id(item.getId())
                 .name(item.getName())
@@ -63,7 +63,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public ItemDtoWithBookings toDtoWithBookings(Item item, Set<Comment> comments) {
+    public ItemDtoWithBookings toDtoWithBookingsAndComments(Item item, Set<Comment> comments) {
         return ItemDtoWithBookings.builder()
                 .id(item.getId())
                 .name(item.getName())

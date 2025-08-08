@@ -108,7 +108,7 @@ public class ItemServiceImpl implements ItemService {
 
         log.info("Найдена вещь: ID={}", itemId);
 
-        return ResponseEntity.ok(itemMapper.toDtoWithBookings(item, commentRepository.getAllByItemId(itemId)));
+        return ResponseEntity.ok(itemMapper.toDtoWithBookingsAndComments(item, commentRepository.getAllByItemId(itemId)));
     }
 
     @Override
@@ -121,7 +121,7 @@ public class ItemServiceImpl implements ItemService {
         List<Item> items = itemRepository.findAllByOwnerId(ownerId);
 
         List<ItemDtoWithBookings> result = items.stream()
-                .map(itemMapper::toDtoWithBookings)
+                .map(itemMapper::toDtoWithBookingsAndComments)
                 .collect(Collectors.toList());
 
         log.info("Найдено {} вещей для пользователя ID={}", result.size(), ownerId);

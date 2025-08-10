@@ -121,7 +121,7 @@ public class ItemServiceImpl implements ItemService {
         List<Item> items = itemRepository.findAllByOwnerId(ownerId);
 
         List<ItemWithBookingsDto> result = items.stream()
-                .map(itemMapper::toDtoWithBookings)
+                .map(itemMapper::toDtoWithBookingsAndComments)
                 .collect(Collectors.toList());
 
         log.info("Найдено {} вещей для пользователя ID={}", result.size(), ownerId);

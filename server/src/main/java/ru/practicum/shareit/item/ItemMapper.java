@@ -50,7 +50,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public ItemWithBookingsDto toDtoWithBookingsAndComments(Item item) {
+    public ItemWithBookingsDto toDtoWithBookings(Item item) {
         return ItemWithBookingsDto.builder()
                 .id(item.getId())
                 .name(item.getName())

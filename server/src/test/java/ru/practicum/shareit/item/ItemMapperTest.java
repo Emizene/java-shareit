@@ -14,7 +14,7 @@ import ru.practicum.shareit.item.comment.dto.CommentResponseDto;
 import ru.practicum.shareit.item.comment.model.Comment;
 import ru.practicum.shareit.item.dto.ChangeItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoSimple;
-import ru.practicum.shareit.item.dto.ItemDtoWithBookings;
+import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
@@ -124,7 +124,7 @@ class ItemMapperTest {
 
         when(commentMapper.toCommentDto(any())).thenReturn(new CommentResponseDto());
 
-        ItemDtoWithBookings dto = itemMapper.toDtoWithBookingsAndComments(item);
+        ItemWithBookingsDto dto = itemMapper.toDtoWithBookingsAndComments(item);
 
         assertThat(dto)
                 .hasFieldOrPropertyWithValue("id", 1L)

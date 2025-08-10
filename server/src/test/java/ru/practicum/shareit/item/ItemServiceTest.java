@@ -20,7 +20,7 @@ import ru.practicum.shareit.item.comment.dto.ChangeCommentDto;
 import ru.practicum.shareit.item.comment.dto.CommentResponseDto;
 import ru.practicum.shareit.item.comment.model.Comment;
 import ru.practicum.shareit.item.dto.ChangeItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoWithBookings;
+import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemServiceImpl;
@@ -224,21 +224,21 @@ class ItemServiceTest {
     void testGetItemById_whenItemFound_thenReturnedItem() {
         Long itemId = ID;
         Item item = new Item(itemId, "Item", "Description", true, user, null);
-        ItemDtoWithBookings expectedDto = new ItemDtoWithBookings(itemId, "Item", "Description", true, "User");
+        ItemWithBookingsDto expectedDto = new ItemWithBookingsDto(itemId, "Item", "Description", true, "User");
 
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
         when(itemMapper.toDtoWithBookingsAndComments(item, Set.of())).thenReturn(expectedDto);
 
-        ResponseEntity<ItemDtoWithBookings> response = itemService.getItemById(itemId);
-        ItemDtoWithBookings actualItemDto = response.getBody();
+        ResponseEntity<ItemWithBookingsDto> response = itemService.getItemById(itemId);
+        ItemWithBookingsDto actualItemDto = response.getBody();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(actualItemDto)
                 .isNotNull()
                 .extracting(
-                        ItemDtoWithBookings::getId,
-                        ItemDtoWithBookings::getName,
-                        ItemDtoWithBookings::getDescription
+                        ItemWithBookingsDto::getId,
+                        ItemWithBookingsDto::getName,
+                        ItemWithBookingsDto::getDescription
                 )
                 .containsExactly(
                         itemId,
@@ -264,7 +264,7 @@ class ItemServiceTest {
         when(itemRepository.findAllByOwnerId(anyLong())).thenReturn(List.of(item));
 
         var response = itemService.getItemsByOwner(ID);
-        List<ItemDtoWithBookings> targetItems = response.getBody();
+        List<ItemWithBookingsDto> targetItems = response.getBody();
 
         Assertions.assertNotNull(targetItems);
         Assertions.assertEquals(1, targetItems.size());

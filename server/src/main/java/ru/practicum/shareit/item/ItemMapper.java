@@ -11,8 +11,8 @@ import ru.practicum.shareit.item.comment.dto.CommentResponseDto;
 import ru.practicum.shareit.item.comment.model.Comment;
 import ru.practicum.shareit.item.dto.ChangeItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoSimple;
-import ru.practicum.shareit.item.dto.ItemDtoWithBookings;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
 import ru.practicum.shareit.item.model.Item;
 
 import java.time.LocalDate;
@@ -50,8 +50,8 @@ public class ItemMapper {
                 .build();
     }
 
-    public ItemDtoWithBookings toDtoWithBookingsAndComments(Item item) {
-        return ItemDtoWithBookings.builder()
+    public ItemWithBookingsDto toDtoWithBookingsAndComments(Item item) {
+        return ItemWithBookingsDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
@@ -63,8 +63,8 @@ public class ItemMapper {
                 .build();
     }
 
-    public ItemDtoWithBookings toDtoWithBookingsAndComments(Item item, Set<Comment> comments) {
-        return ItemDtoWithBookings.builder()
+    public ItemWithBookingsDto toDtoWithBookingsAndComments(Item item, Set<Comment> comments) {
+        return ItemWithBookingsDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
@@ -90,6 +90,7 @@ public class ItemMapper {
     }
 
     public BookingDtoSimple mapNextBooking(Item item) {
+        if (item == null || item.getBookings() == null) return null;
         return item.getBookings().stream()
                 .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
                 .min(Comparator.comparing(Booking::getStart))
@@ -97,6 +98,7 @@ public class ItemMapper {
     }
 
     public BookingDtoSimple mapLastBooking(Item item) {
+        if (item == null || item.getBookings() == null) return null;
         return item.getBookings().stream()
                 .filter(booking -> booking.getEnd().toLocalDate().isBefore(LocalDate.now()))
                 .max(Comparator.comparing(Booking::getStart)).map(bookingMapper::toBookingDtoSimple)

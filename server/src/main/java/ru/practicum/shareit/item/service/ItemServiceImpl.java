@@ -17,7 +17,7 @@ import ru.practicum.shareit.item.comment.dto.ChangeCommentDto;
 import ru.practicum.shareit.item.comment.dto.CommentResponseDto;
 import ru.practicum.shareit.item.comment.model.Comment;
 import ru.practicum.shareit.item.dto.ChangeItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoWithBookings;
+import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.RequestRepository;
@@ -100,7 +100,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ResponseEntity<ItemDtoWithBookings> getItemById(Long itemId) {
+    public ResponseEntity<ItemWithBookingsDto> getItemById(Long itemId) {
         log.debug("Запрос вещи с ID {}", itemId);
 
         Item item = itemRepository.findById(itemId)
@@ -112,7 +112,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ResponseEntity<List<ItemDtoWithBookings>> getItemsByOwner(Long ownerId) {
+    public ResponseEntity<List<ItemWithBookingsDto>> getItemsByOwner(Long ownerId) {
         log.debug("Запрос всех вещей пользователя с ID {}", ownerId);
 
         userRepository.findById(ownerId)
@@ -120,7 +120,7 @@ public class ItemServiceImpl implements ItemService {
 
         List<Item> items = itemRepository.findAllByOwnerId(ownerId);
 
-        List<ItemDtoWithBookings> result = items.stream()
+        List<ItemWithBookingsDto> result = items.stream()
                 .map(itemMapper::toDtoWithBookingsAndComments)
                 .collect(Collectors.toList());
 

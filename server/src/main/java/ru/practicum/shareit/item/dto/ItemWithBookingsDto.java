@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ItemDtoWithBookings {
+public class ItemWithBookingsDto {
     private Long id;
     private String name;
     private String description;
@@ -24,7 +24,7 @@ public class ItemDtoWithBookings {
     private List<CommentResponseDto> comments;
     private String ownerName;
 
-    public ItemDtoWithBookings(Long id, String name, String description, Boolean available, String ownerName) {
+    public ItemWithBookingsDto(Long id, String name, String description, Boolean available, String ownerName) {
         this.id = id;
         this.name = name;
         this.description = description;

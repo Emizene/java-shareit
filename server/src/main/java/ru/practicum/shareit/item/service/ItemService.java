@@ -4,7 +4,7 @@ import org.springframework.http.ResponseEntity;
 import ru.practicum.shareit.item.comment.dto.ChangeCommentDto;
 import ru.practicum.shareit.item.comment.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ChangeItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoWithBookings;
+import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 
 import java.util.List;
@@ -15,9 +15,9 @@ public interface ItemService {
 
     ResponseEntity<ItemResponseDto> updateItem(Long itemId, ChangeItemDto item, Long userId);
 
-    ResponseEntity<ItemDtoWithBookings> getItemById(Long itemId);
+    ResponseEntity<ItemWithBookingsDto> getItemById(Long itemId);
 
-    ResponseEntity<List<ItemDtoWithBookings>> getItemsByOwner(Long userId);
+    ResponseEntity<List<ItemWithBookingsDto>> getItemsByOwner(Long userId);
 
     ResponseEntity<List<ItemResponseDto>> searchItem(String searchText);
 

@@ -8,7 +8,7 @@ import ru.practicum.shareit.SharedHeaders;
 import ru.practicum.shareit.item.comment.dto.ChangeCommentDto;
 import ru.practicum.shareit.item.comment.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ChangeItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoWithBookings;
+import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.service.ItemService;
 
@@ -40,12 +40,12 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ResponseEntity<ItemDtoWithBookings> getItemById(@PathVariable Long itemId) {
+    public ResponseEntity<ItemWithBookingsDto> getItemById(@PathVariable Long itemId) {
         return itemService.getItemById(itemId);
     }
 
     @GetMapping
-    public ResponseEntity<List<ItemDtoWithBookings>> getItemsByOwner(@RequestHeader(SharedHeaders.USER_ID_HEADER) Long userId) {
+    public ResponseEntity<List<ItemWithBookingsDto>> getItemsByOwner(@RequestHeader(SharedHeaders.USER_ID_HEADER) Long userId) {
         return itemService.getItemsByOwner(userId);
     }
 

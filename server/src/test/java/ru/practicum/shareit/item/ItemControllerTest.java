@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import ru.practicum.shareit.item.comment.dto.ChangeCommentDto;
 import ru.practicum.shareit.item.comment.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ChangeItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoWithBookings;
+import ru.practicum.shareit.item.dto.ItemWithBookingsDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.service.ItemService;
 
@@ -87,12 +87,12 @@ class ItemControllerTest {
     @Test
     void testSuccessGetItemById() {
         Long itemId = 1L;
-        ItemDtoWithBookings expectedItem = new ItemDtoWithBookings();
+        ItemWithBookingsDto expectedItem = new ItemWithBookingsDto();
         expectedItem.setId(itemId);
 
         when(itemService.getItemById(itemId)).thenReturn(ResponseEntity.ok(expectedItem));
 
-        ItemDtoWithBookings result = itemController.getItemById(itemId).getBody();
+        ItemWithBookingsDto result = itemController.getItemById(itemId).getBody();
 
         assertEquals(expectedItem, result);
         verify(itemService).getItemById(itemId);
@@ -102,12 +102,12 @@ class ItemControllerTest {
     void testSuccessGetItemsByOwner() {
         Long userId = 1L;
 
-        ItemDtoWithBookings itemDto = new ItemDtoWithBookings();
-        List<ItemDtoWithBookings> expectedItems = List.of(itemDto);
+        ItemWithBookingsDto itemDto = new ItemWithBookingsDto();
+        List<ItemWithBookingsDto> expectedItems = List.of(itemDto);
 
         when(itemService.getItemsByOwner(userId)).thenReturn(ResponseEntity.ok(expectedItems));
 
-        Collection<ItemDtoWithBookings> result = itemController.getItemsByOwner(userId).getBody();
+        Collection<ItemWithBookingsDto> result = itemController.getItemsByOwner(userId).getBody();
 
         assertEquals(expectedItems, result);
         verify(itemService).getItemsByOwner(userId);

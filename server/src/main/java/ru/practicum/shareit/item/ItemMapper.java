@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -89,16 +90,14 @@ public class ItemMapper {
                 .collect(Collectors.toList());
     }
 
-    public BookingDtoSimple mapNextBooking(Item item) {
-        if (item == null || item.getBookings() == null) return null;
+    public BookingDtoSimple mapNextBooking(@NotNull Item item) {
         return item.getBookings().stream()
                 .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
                 .min(Comparator.comparing(Booking::getStart))
                 .map(bookingMapper::toBookingDtoSimple).orElse(null);
     }
 
-    public BookingDtoSimple mapLastBooking(Item item) {
-        if (item == null || item.getBookings() == null) return null;
+    public BookingDtoSimple mapLastBooking(@NotNull Item item) {
         return item.getBookings().stream()
                 .filter(booking -> booking.getEnd().toLocalDate().isBefore(LocalDate.now()))
                 .max(Comparator.comparing(Booking::getStart)).map(bookingMapper::toBookingDtoSimple)
